@@ -38,21 +38,30 @@ Parsed intake (JSON):
 Produce a `WorkflowMap` with 3-8 `Workflow` entries. A workflow is a
 CLUSTER of related recurring tasks, not a single task.
 
+HARD COVERAGE REQUIREMENTS:
+1. Every weekly_task with estimated_time_minutes_per_week >= 60 MUST
+   be represented in some workflow. Do not drop large time sinks.
+2. Every entry in parsed_intake.top_pain_points MUST map onto at
+   least one workflow (named or described).
+3. The owner's primary_goal is to reclaim hours; the map must
+   surface the workflows where those hours actually live.
+
 For each workflow:
 - id: lowercase slug, alphanumeric with hyphens, unique within this
   Audit (e.g. "lead-followup", "client-invoicing").
 - title: short human-readable label.
 - description: 1-2 sentences.
 - frequency: one of "daily" / "weekly" / "monthly" / "event_driven".
-- minutes_per_occurrence and occurrences_per_week: integers.
+- minutes_per_occurrence and occurrences_per_week: numbers
+  (fractional ok — a monthly invoice run is ~0.25 occurrences/week).
 - inputs: what triggers the workflow.
 - outputs: what it produces.
-- pain_points: list of strings tied to this workflow specifically.
-- tools_used: tools currently used for this workflow; subset of
+- pain_points: list of strings tied to this workflow specifically;
+  draw from parsed_intake.top_pain_points where applicable.
+- tools_used: tools currently used; subset of
   parsed_intake.tools_in_use.
 
-Cluster related weekly_tasks into workflows. Aim for 3-6 workflows
-for a typical solo or small-team owner.
+Aim for 3-6 workflows for a typical solo or small-team owner.
 """
 
 
@@ -77,12 +86,28 @@ Scoring fields:
 - rank: 1 = highest leverage. UNIQUE ranks 1..N across all workflows.
 - rationale: ONE short sentence specific to this business (≤ 25 words).
 
-Mix fields:
-- automate_pct + assist_pct + keep_human_pct must sum to EXACTLY 100.
-- For human_judgment_needed = "high", keep_human_pct must be >= 30.
-- automate_examples / assist_examples / keep_human_examples: SHORT
-  sub-tasks. 1-2 items per list, each ≤ 12 words. Each non-zero pct
-  requires at least one example.
+RANKING RULE (apply in order):
+  1. Primary: rank by time_saved_hours_per_week_estimate, DESCENDING.
+     The owner's primary_goal is to reclaim hours — a workflow that
+     saves 1.5h/wk outranks one that saves 0.5h/wk even if the
+     0.5h/wk option is easier to ship.
+  2. Tiebreaker: prefer lower setup_complexity.
+  3. Tiebreaker: prefer lower risk_if_ai_gets_it_wrong.
+Do NOT rank by ease-of-experiment alone. The bet designer downstream
+will weigh setup cost against the owner's budget; the ranking should
+reflect WHERE THE HOURS LIVE, not where the experiment is easiest.
+
+Mix fields — apply these hard constraints in order:
+1. automate_pct + assist_pct + keep_human_pct must sum to EXACTLY 100.
+2. CONSISTENCY RULE (mandatory): if human_judgment_needed = "high",
+   then keep_human_pct MUST be >= 30. Set keep_human BEFORE filling
+   the other two. Do not label something "high judgment" then leave
+   most of it to AI — that is a contradiction and will be rejected.
+3. If risk_if_ai_gets_it_wrong = "high", lean toward
+   keep_human_pct >= 20 unless you have a specific mitigation in mind.
+4. automate_examples / assist_examples / keep_human_examples: SHORT
+   sub-tasks. 1-2 items per list, each ≤ 12 words. Each non-zero pct
+   requires at least one example.
 
 Output also overall_top_three_ids: the three workflow_ids with ranks 1, 2, 3.
 
