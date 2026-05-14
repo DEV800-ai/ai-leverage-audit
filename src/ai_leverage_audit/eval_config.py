@@ -112,21 +112,52 @@ def _target_workflow_is_experimenting(state: AuditState) -> tuple[bool, str]:
     return False, f"target workflow {target!r} not found in playbook entries"
 
 
+_STOPWORDS = {
+    "the", "a", "an", "to", "of", "for", "with", "and", "or", "in", "on",
+    "at", "by", "is", "are", "be", "as", "it", "that", "this",
+}
+
+
+def _tokenize(text: str) -> set[str]:
+    """Lowercase + strip punctuation + drop stopwords. Hyphenated words kept whole."""
+    return {
+        w.strip(".,!?:;()\"'").lower()
+        for w in text.split()
+        if w.strip(".,!?:;()\"'").lower() not in _STOPWORDS
+    } - {""}
+
+
 def _refused_areas_reflected_in_keep_human(state: AuditState) -> tuple[bool, str]:
-    refused = [r.strip().lower() for r in state.parsed_intake.refused_automation_areas if r.strip()]
+    """Each refused area's significant words should overlap >= 50% with some
+    keep_human_area's text. Substring match was too strict — the LLM
+    rewords "Strategic recommendations to clients" as "Strategic
+    recommendations" and the intent is preserved. Word overlap captures
+    that while still rejecting unrelated keep_human content.
+    """
+    refused = [r.strip() for r in state.parsed_intake.refused_automation_areas if r.strip()]
     if not refused:
         return True, "no refused areas to check"
-    keep_human_text = " ".join(
-        f"{kh.area} {kh.reason}".lower()
-        for kh in state.risk_and_agency_map.keep_human_areas
-    )
-    # Substring check; the LLM judge handles synonym recognition.
-    missing = [r for r in refused if r not in keep_human_text]
-    if missing:
-        return False, (
-            f"refused areas not reflected (substring match) in keep_human_areas: {missing}"
+
+    keep_human_word_sets = [
+        _tokenize(f"{kh.area} {kh.reason}") for kh in state.risk_and_agency_map.keep_human_areas
+    ]
+
+    unmatched = []
+    for r in refused:
+        sig = _tokenize(r)
+        if not sig:
+            continue
+        # Best overlap across any keep_human_area.
+        best_overlap = max(
+            (len(sig & kh_words) / len(sig) for kh_words in keep_human_word_sets),
+            default=0.0,
         )
-    return True, "all refused areas reflected in keep_human_areas"
+        if best_overlap < 0.5:
+            unmatched.append(f"{r!r} (best overlap {best_overlap:.0%})")
+
+    if unmatched:
+        return False, f"refused areas insufficiently reflected in keep_human_areas: {unmatched}"
+    return True, "all refused areas reflected (≥50% word overlap)"
 
 
 def _high_judgment_keep_human_at_least_30(state: AuditState) -> tuple[bool, str]:
