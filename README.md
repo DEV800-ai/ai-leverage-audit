@@ -20,8 +20,11 @@ Next: **Gate 2** — implement the 7 agents, prompts, and eval config from `PROD
 # Clone leverage-platform as a sibling directory:
 git clone git@github.com:DEV800-ai/leverage-platform.git ../leverage-platform
 
-# Install with the local platform integration:
-uv sync --extra dev --extra platform
+# Create the venv + install the product's own deps:
+uv sync --extra dev
+
+# Install the sibling platform in editable mode:
+uv pip install -e ../leverage-platform
 
 # Smoke check:
 uv run audit --help
@@ -30,7 +33,7 @@ uv run audit --help
 uv run pytest
 ```
 
-The `platform` extra brings in `leverage-platform` from `../leverage-platform/` via `[tool.uv.sources]`. With the extra installed, `test_smoke.py::test_leverage_platform_optional_at_gate_1` actually exercises the platform import. Without it, that test is skipped.
+The third command (installing the sibling platform) is a manual step — `leverage-platform` is deliberately **not** declared in `pyproject.toml` because attempting to declare a private local-path dep there breaks CI (uv resolves it regardless of which extras are selected). With the platform installed, `test_smoke.py::test_leverage_platform_optional_at_gate_1` actually exercises the import. Without it, that test is auto-skipped.
 
 ## Gate 1 vs Gate 2 — CI explanation
 

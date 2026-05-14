@@ -58,15 +58,15 @@ def test_cli_run_subcommand_is_placeholder(
 def test_leverage_platform_optional_at_gate_1() -> None:
     """leverage-platform may or may not be installed at Gate 1.
 
-    Locally (with `uv sync --extra platform`) it is, and the import works.
-    In CI (Gate 1) the extra is skipped — see README.md. Gate 2 makes it
-    mandatory.
+    Locally, after `uv pip install -e ../leverage-platform`, the import works.
+    In CI (Gate 1) the platform is not installed — see README.md. Gate 2
+    makes it mandatory.
     """
     spec = importlib.util.find_spec("leverage_platform")
     if spec is None:
         pytest.skip(
             "leverage_platform not installed; expected in CI at Gate 1. "
-            "Run `uv sync --extra platform` for local platform integration."
+            "For local integration: `uv pip install -e ../leverage-platform`."
         )
     import leverage_platform  # noqa: F401 — import-side-effects-only assertion
 

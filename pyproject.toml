@@ -14,12 +14,18 @@ dev = [
     "pytest-asyncio>=0.24",
     "ruff>=0.6",
 ]
-# Local development: brings in leverage-platform from the sibling repo
-# via [tool.uv.sources] below. CI deliberately does NOT install this
-# extra in Gate 1 — see README.md "Gate 1 vs Gate 2" for why.
-platform = [
-    "leverage-platform",
-]
+
+# Note on leverage-platform: deliberately NOT declared as a dependency
+# in pyproject.toml. It's a private sibling repo, and listing it via
+# [tool.uv.sources] breaks CI (uv tries to resolve it even when its
+# extra is excluded). For local development, after `uv sync --extra dev`,
+# install the platform with:
+#
+#     uv pip install -e ../leverage-platform
+#
+# At Gate 2, when CI must run e2e tests that actually use platform code,
+# this gets revisited — either by making leverage-platform public or by
+# adding a deploy key. See README.md "Gate 1 vs Gate 2 — CI explanation".
 
 [project.scripts]
 audit = "ai_leverage_audit.cli:main"
@@ -30,9 +36,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ai_leverage_audit"]
-
-[tool.uv.sources]
-leverage-platform = { path = "../leverage-platform", editable = true }
 
 [tool.ruff]
 line-length = 100
