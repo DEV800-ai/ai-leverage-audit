@@ -1,0 +1,49 @@
+[project]
+name = "ai-leverage-audit"
+version = "0.0.0"
+description = "AI Operating Mentor for solopreneurs and small business owners — diagnoses workflows, identifies AI leverage, designs a 30-day experiment."
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "pydantic>=2.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.6",
+]
+# Local development: brings in leverage-platform from the sibling repo
+# via [tool.uv.sources] below. CI deliberately does NOT install this
+# extra in Gate 1 — see README.md "Gate 1 vs Gate 2" for why.
+platform = [
+    "leverage-platform",
+]
+
+[project.scripts]
+audit = "ai_leverage_audit.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ai_leverage_audit"]
+
+[tool.uv.sources]
+leverage-platform = { path = "../leverage-platform", editable = true }
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q"
+pythonpath = ["src"]
+asyncio_mode = "auto"
