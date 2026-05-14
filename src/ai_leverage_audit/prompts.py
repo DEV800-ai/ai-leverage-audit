@@ -135,7 +135,15 @@ the top three if it fits the owner's budgets better):
 - failure_metric: a genuine off-ramp. Must DIFFER in substance from the
   success_metric.
 - weekly_plan: EXACTLY 4 entries, one per week (week 1..4).
-- first_48h_actions: at least 2 actions completable in 48 hours.
+- first_48h_actions: 2-3 BITE-SIZED actions. The owner only has
+  ~2/7 of their weekly_time_budget_hours available within 48 hours
+  (a weekend). Each action ≤ 20 minutes of work. Total time across
+  all first_48h_actions ≤ 1 hour. Examples of good actions:
+  "block 30 min on calendar to draft template", "list current step-
+  by-step process from memory", "open 3 vendor sites and bookmark
+  pricing". Examples of BAD actions (too big for 48h):
+  "research and select a tool", "build prompt template", "set up
+  integration".
 - expected_asset_created: what the owner has at day 30 regardless of outcome.
 - estimated_weekly_time_hours: must be <= parsed_intake.weekly_time_budget_hours.
 - estimated_setup_cost_usd: must be <= parsed_intake.monthly_budget_usd.
@@ -199,16 +207,25 @@ Produce a `FirstPlaybook`:
 - title: e.g. "<Business descriptor> — AI Playbook v1".
 - business_summary: 2-3 short sentences.
 - workflow_entries: EXACTLY one PlaybookEntry per workflow in
-  workflow_map.workflows. For each:
+  workflow_map.workflows. Fill current_status using this two-step
+  procedure — DO NOT skip step 1.
+
+  STEP 1 (mandatory, do this FIRST):
+      Find the workflow_entry whose workflow_id exactly matches
+      thirty_day_bet.target_workflow_id (from the input above).
+      Set THAT entry's current_status to "experimenting".
+
+  STEP 2 (after step 1):
+      For every other workflow_entry, set current_status to
+      "not_yet_tested".
+
+  Exactly ONE entry will be "experimenting" — the one matching the
+  bet's target_workflow_id. All others are "not_yet_tested".
+  If you produce a playbook where the target's status is not
+  "experimenting", you have produced an invalid output.
+
+  Each entry also needs:
     - workflow_id (matches the workflow_map id).
-    - current_status: MUST follow these rules without exception:
-        * If workflow_id == thirty_day_bet.target_workflow_id
-          → "experimenting" (this is mandatory; do not pick anything else).
-        * Else if workflow_id NOT in
-          leverage_analysis.overall_top_three_ids
-          → "not_yet_tested".
-        * Else (other top-3 workflows)
-          → "not_yet_tested".
     - summary: 1 short sentence.
 - rules_for_human_involvement: 3-5 entries drawn from
   risk_and_agency_map.
