@@ -4,7 +4,10 @@
 and writes the report (as JSON) to stdout or to `--output`.
 
 Environment variables consumed at runtime:
-- ANTHROPIC_API_KEY: required for the Anthropic provider.
+- LLM_PROVIDER: "anthropic" (default) or "openai".
+- ANTHROPIC_API_KEY: required when LLM_PROVIDER=anthropic.
+- OPENAI_API_KEY: required when LLM_PROVIDER=openai.
+- LLM_MODEL: optional override for the provider's default model.
 - AUDIT_DB: SQLite path (default: ./audit.db).
 - AUDIT_TENANT_ID: tenant attribution (default: "default").
 """
@@ -47,8 +50,49 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _build_provider() -> object | None:
+    """Construct the LLMProvider chosen by env. Returns None on misconfiguration."""
+    choice = os.environ.get("LLM_PROVIDER", "anthropic").lower()
+    model_override = os.environ.get("LLM_MODEL")
+
+    if choice == "anthropic":
+        from leverage_platform.llm import AnthropicProvider
+
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            print(
+                "ANTHROPIC_API_KEY env var is required for LLM_PROVIDER=anthropic.",
+                file=sys.stderr,
+            )
+            return None
+        kwargs: dict[str, str] = {"api_key": api_key}
+        if model_override:
+            kwargs["default_model"] = model_override
+        return AnthropicProvider(**kwargs)
+
+    if choice == "openai":
+        from leverage_platform.llm import OpenAIProvider
+
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            print(
+                "OPENAI_API_KEY env var is required for LLM_PROVIDER=openai.",
+                file=sys.stderr,
+            )
+            return None
+        kwargs2: dict[str, str] = {"api_key": api_key}
+        if model_override:
+            kwargs2["default_model"] = model_override
+        return OpenAIProvider(**kwargs2)
+
+    print(
+        f"Unknown LLM_PROVIDER={choice!r}. Expected 'anthropic' or 'openai'.",
+        file=sys.stderr,
+    )
+    return None
+
+
 def _run_audit(intake_path: str, output_path: str) -> int:
-    from leverage_platform.llm.anthropic import AnthropicProvider
     from leverage_platform.runtime import AgentContext
     from leverage_platform.storage import SQLiteStore
 
@@ -63,12 +107,10 @@ def _run_audit(intake_path: str, output_path: str) -> int:
     raw = json.loads(intake_file.read_text())
     intake = AuditIntake.model_validate(raw)
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        print("ANTHROPIC_API_KEY env var is required for `audit run`.", file=sys.stderr)
+    provider = _build_provider()
+    if provider is None:
         return 2
 
-    provider = AnthropicProvider(api_key=api_key)
     store = SQLiteStore(os.environ.get("AUDIT_DB", "audit.db"))
 
     try:

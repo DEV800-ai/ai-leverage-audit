@@ -16,11 +16,21 @@ Next: **Gate 3** — 5 friend-and-family real intakes meet `PRODUCT_MVP.md` §7 
 
 ### Running a live Audit
 
+Anthropic (default):
+
 ```bash
-ANTHROPIC_API_KEY=sk-... uv run audit run --intake fixtures/intakes/synthetic_consultant.json
+ANTHROPIC_API_KEY=sk-ant-... uv run audit run --intake fixtures/intakes/synthetic_consultant.json
 ```
 
-Outputs a JSON report containing the `workflow_run_id` and the full `EvalReport`. Intermediate artifacts (parsed intake, workflow map, leverage analysis, 30-day bet, risk + agency map, first playbook) are persisted to `audit.db` (override with `AUDIT_DB=path.db`).
+OpenAI:
+
+```bash
+LLM_PROVIDER=openai OPENAI_API_KEY=sk-... uv run audit run --intake fixtures/intakes/synthetic_consultant.json
+```
+
+Optional env vars: `LLM_MODEL` overrides the provider default (e.g. `LLM_MODEL=gpt-4o-mini`), `AUDIT_DB` overrides the SQLite path, `AUDIT_TENANT_ID` overrides the tenant attribution string (default `"default"` per `PRODUCT_MVP.md` §10).
+
+Outputs a JSON report with the `workflow_run_id` and the full `EvalReport`. Intermediate artifacts (parsed intake, workflow map, leverage analysis, 30-day bet, risk + agency map, first playbook) are persisted as `Artifact` rows in `audit.db`.
 
 ## Local development
 

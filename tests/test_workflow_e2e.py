@@ -115,22 +115,36 @@ async def test_audit_runs_end_to_end_against_mock_provider(
 
 @pytest.mark.skipif(
     os.environ.get("RUN_LIVE_TESTS") != "1",
-    reason="Live Anthropic test gated by RUN_LIVE_TESTS=1",
+    reason="Live LLM test gated by RUN_LIVE_TESTS=1",
 )
-async def test_audit_runs_end_to_end_against_real_anthropic(
+async def test_audit_runs_end_to_end_against_real_llm(
     store: SQLiteStore, intake: AuditIntake
 ) -> None:
-    """Opt-in test: run the Audit against real Anthropic, asserting accepted.
+    """Opt-in test: run the Audit against a real LLM provider.
 
-    Set ANTHROPIC_API_KEY and RUN_LIVE_TESTS=1 to enable. Costs real money.
+    Provider selection by env var (same as the CLI):
+    - LLM_PROVIDER=anthropic + ANTHROPIC_API_KEY (default)
+    - LLM_PROVIDER=openai + OPENAI_API_KEY
+    Costs real money. Set RUN_LIVE_TESTS=1 to enable.
     """
-    from leverage_platform.llm.anthropic import AnthropicProvider
+    choice = os.environ.get("LLM_PROVIDER", "anthropic").lower()
+    if choice == "anthropic":
+        from leverage_platform.llm import AnthropicProvider
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        pytest.skip("ANTHROPIC_API_KEY not set; cannot run live test")
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            pytest.skip("ANTHROPIC_API_KEY not set; cannot run live test")
+        provider: object = AnthropicProvider(api_key=api_key)
+    elif choice == "openai":
+        from leverage_platform.llm import OpenAIProvider
 
-    provider = AnthropicProvider(api_key=api_key)
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            pytest.skip("OPENAI_API_KEY not set; cannot run live test")
+        provider = OpenAIProvider(api_key=api_key)
+    else:
+        pytest.fail(f"unknown LLM_PROVIDER={choice!r}")
+
     ctx = AgentContext(tenant_id="default", provider=provider, store=store)
 
     workflow_id, report = await run_audit(ctx, intake)
