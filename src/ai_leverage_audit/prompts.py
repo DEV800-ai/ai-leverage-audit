@@ -167,10 +167,12 @@ Leverage analysis (JSON):
 
 Produce a `RiskAndAgencyMap`:
 
-- keep_human_areas: 2-4 entries. Areas where automation is unsafe.
-  Each entry MUST cover every item from
-  parsed_intake.refused_automation_areas (substring or clear synonym).
-  Fields: area, reason, severity (low/medium/high).
+- keep_human_areas: MUST contain at least one entry for EVERY item
+  in parsed_intake.refused_automation_areas (substring or clear
+  synonym). Optionally add 1-2 extra entries for additional unsafe
+  areas the audit identifies. Minimum 2 entries; no upper cap if the
+  owner listed many refused items. Fields: area, reason, severity
+  (low/medium/high).
 - automation_risks: 2-4 entries. Fields: automation, what_could_break,
   mitigation.
 - agency_checkpoints: 3-5 entries. Fields: trigger, required_action,
