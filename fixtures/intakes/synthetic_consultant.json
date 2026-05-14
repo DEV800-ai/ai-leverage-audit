@@ -1,0 +1,15 @@
+{
+    "business_type": "freelance branding consultant for early-stage SaaS",
+    "current_role": "owner-operator",
+    "team_size": 1,
+    "months_in_business": 18,
+    "weekly_tasks_text": "I run discovery calls with 2-3 new leads each week, write proposals based on those calls, scope visual identity projects, send invoices monthly to about 5 active clients, manage a project board with deliverables and feedback rounds, write a weekly newsletter to 500 subs, post 2 LinkedIn updates each week, and review portfolio updates from a part-time designer I subcontract.",
+    "current_tools_text": "Notion for project management, Stripe for invoicing, Figma for visual work, ConvertKit for the newsletter, LinkedIn, Gmail for client comms, Calendly for scheduling, Loom for client video updates.",
+    "top_time_sinks_text": "Writing proposals from scratch each time takes me 2-3 hours and they're all structurally similar. Following up on stale leads is something I forget. Project status updates to clients are repetitive but they expect them weekly.",
+    "error_sensitive_areas_text": "Anything that goes to the client directly: invoices, proposals, scope documents, design deliverables. Newsletter sends. Anything visible to the public on LinkedIn.",
+    "customer_facing_areas_text": "Discovery calls, all written client comms, proposals, scope agreements, invoices, design reviews, weekly newsletter, LinkedIn posts.",
+    "primary_goal_text": "I want to reclaim 5 to 8 hours per week of admin time and reinvest it into strategy work for higher-margin clients, or into building a small productized offering I can sell repeatedly.",
+    "weekly_time_to_invest_hours": 6,
+    "monthly_budget_usd": 80,
+    "things_owner_refuses_to_automate_text": "Direct client communication. The relationship is the product. I'm fine if AI helps me draft, but I always send the final message myself."
+}

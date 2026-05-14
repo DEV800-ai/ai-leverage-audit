@@ -1,10 +1,4 @@
-"""Smoke tests — proves the product package imports, the CLI runs, and the
-sibling `leverage-platform` package is reachable.
-
-Now that leverage-platform is a public repo and pinned as a regular
-dependency (see pyproject.toml), the platform import is no longer
-optional. CI must satisfy it before Gate 2 work begins.
-"""
+"""Smoke tests — package import, CLI surface, platform reachability."""
 
 from __future__ import annotations
 
@@ -31,7 +25,7 @@ def test_cli_no_args_prints_help(capsys: pytest.CaptureFixture[str]) -> None:
     assert rc == 0
     captured = capsys.readouterr()
     assert "AI Leverage Audit" in captured.out
-    assert "run" in captured.out  # subcommand listed
+    assert "run" in captured.out
 
 
 def test_cli_help_flag(capsys: pytest.CaptureFixture[str]) -> None:
@@ -43,19 +37,7 @@ def test_cli_help_flag(capsys: pytest.CaptureFixture[str]) -> None:
     assert "AI Leverage Audit" in captured.out
 
 
-def test_cli_run_subcommand_is_placeholder(
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    """`audit run --intake X` returns rc=1 with a 'not implemented' message."""
-    rc = main(["run", "--intake", "fixtures/intakes/none.json"])
-    assert rc == 1
-    captured = capsys.readouterr()
-    assert "not yet implemented" in captured.err
-
-
 def test_leverage_platform_is_importable() -> None:
     """leverage-platform is a required dependency; the import must work."""
-    import leverage_platform  # noqa: F401 — import-side-effects-only assertion
-
-    # Smoke-check that a representative platform symbol resolves.
+    import leverage_platform  # noqa: F401
     from leverage_platform.runtime import agent  # noqa: F401

@@ -10,9 +10,17 @@ The full product spec lives in the [`leverage-platform`](https://github.com/DEV8
 
 ## Status
 
-**Gate 1 — Skeleton runs.** The CLI is wired (`audit --help`), the package imports, CI is green. No Audit logic yet.
+**Gate 2 — Synthetic Audit accepted.** All 7 agents, 7 schemas, prompts, 10 deterministic rules + 6-question rubric, and the workflow orchestration ship per [`PRODUCT_MVP.md`](https://github.com/DEV800-ai/leverage-platform/blob/main/docs/product/PRODUCT_MVP.md) §3–§6. The synthetic-consultant intake produces `EvalReport.accepted=true` end-to-end against `MockLLMProvider`. An opt-in live test exercises real Anthropic when `RUN_LIVE_TESTS=1` is set.
 
-Next: **Gate 2** — implement the 7 agents, prompts, and eval config from `PRODUCT_MVP.md` §3–§6. One synthetic intake must produce `EvalReport.accepted=true` against `MockLLMProvider`, and an opt-in live test must do the same against real Anthropic.
+Next: **Gate 3** — 5 friend-and-family real intakes meet `PRODUCT_MVP.md` §7 acceptance.
+
+### Running a live Audit
+
+```bash
+ANTHROPIC_API_KEY=sk-... uv run audit run --intake fixtures/intakes/synthetic_consultant.json
+```
+
+Outputs a JSON report containing the `workflow_run_id` and the full `EvalReport`. Intermediate artifacts (parsed intake, workflow map, leverage analysis, 30-day bet, risk + agency map, first playbook) are persisted to `audit.db` (override with `AUDIT_DB=path.db`).
 
 ## Local development
 
