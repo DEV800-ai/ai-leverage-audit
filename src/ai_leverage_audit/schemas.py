@@ -76,8 +76,10 @@ class Workflow(BaseModel):
     title: str
     description: str
     frequency: Literal["daily", "weekly", "monthly", "event_driven"]
-    minutes_per_occurrence: int = Field(ge=1)
-    occurrences_per_week: int = Field(ge=1)
+    # Allow fractional values: a monthly workflow is ~0.25 occurrences/week.
+    # Floor at 0 so event-driven workflows can express rarity (e.g. 0.1).
+    minutes_per_occurrence: float = Field(ge=0)
+    occurrences_per_week: float = Field(ge=0)
     inputs: str
     outputs: str
     pain_points: list[str]

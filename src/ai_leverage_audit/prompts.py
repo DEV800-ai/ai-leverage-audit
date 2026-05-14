@@ -21,8 +21,9 @@ Produce a `ParsedIntake`:
   error-sensitive areas.
 - primary_goal: rewrite primary_goal_text as one sentence.
 - weekly_time_budget_hours, monthly_budget_usd: copy from intake.
-- refused_automation_areas: extract from
-  things_owner_refuses_to_automate_text. May be empty list.
+- refused_automation_areas: extract 1-5 ATOMIC items (one concept
+  per item, ≤ 8 words each). Break compound or multi-sentence text
+  into separate items. May be empty list.
 
 Be specific to the actual business described. Do not generalise.
 """
@@ -56,7 +57,8 @@ for a typical solo or small-team owner.
 
 
 LEVERAGE_ANALYST_PROMPT = """\
-You are scoring AI leverage for each workflow in a small business.
+You are scoring AI leverage for each workflow in a small business. Be
+terse. Every field below has a length cap; respect it.
 
 Parsed intake (JSON):
 {parsed_intake_json}
@@ -72,17 +74,19 @@ Scoring fields:
 - risk_if_ai_gets_it_wrong: low / medium / high.
 - setup_complexity: low / medium / high.
 - human_judgment_needed: low / medium / high.
-- rank: 1 = highest leverage. Assign UNIQUE ranks 1..N across all
-  workflows (a permutation, no duplicates).
-- rationale: 1-3 sentences specific to this business.
+- rank: 1 = highest leverage. UNIQUE ranks 1..N across all workflows.
+- rationale: ONE short sentence specific to this business (≤ 25 words).
 
 Mix fields:
 - automate_pct + assist_pct + keep_human_pct must sum to EXACTLY 100.
 - For human_judgment_needed = "high", keep_human_pct must be >= 30.
-- automate_examples / assist_examples / keep_human_examples: concrete
-  sub-tasks. Each non-zero pct requires at least one example.
+- automate_examples / assist_examples / keep_human_examples: SHORT
+  sub-tasks. 1-2 items per list, each ≤ 12 words. Each non-zero pct
+  requires at least one example.
 
 Output also overall_top_three_ids: the three workflow_ids with ranks 1, 2, 3.
+
+Be specific to the owner. Do not pad. JSON only.
 """
 
 
@@ -117,7 +121,7 @@ The bet must be specific to the owner's tools, role, and primary_goal.
 
 RISK_MAPPER_PROMPT = """\
 You are mapping risks and human-agency safeguards for a small business
-owner's AI rollout.
+owner's AI rollout. Be terse — each string ≤ 20 words.
 
 Parsed intake (JSON):
 {parsed_intake_json}
@@ -130,25 +134,25 @@ Leverage analysis (JSON):
 
 Produce a `RiskAndAgencyMap`:
 
-- keep_human_areas: at LEAST 2. Areas where automation is unsafe:
-  regulated work, customer-trust, high-judgment work. Each entry must
-  include every item from parsed_intake.refused_automation_areas
-  (matched by substring or clear synonym). Each entry has area /
-  reason / severity.
-- automation_risks: at LEAST 2. For each: automation,
-  what_could_break, mitigation.
-- agency_checkpoints: at LEAST 3. For each: trigger, required_action,
-  cadence.
-- weekly_review_questions: 3-6 questions the owner asks themselves
-  each week. At least one question should reference each
-  keep_human_area thematically.
+- keep_human_areas: 2-4 entries. Areas where automation is unsafe.
+  Each entry MUST cover every item from
+  parsed_intake.refused_automation_areas (substring or clear synonym).
+  Fields: area, reason, severity (low/medium/high).
+- automation_risks: 2-4 entries. Fields: automation, what_could_break,
+  mitigation.
+- agency_checkpoints: 3-5 entries. Fields: trigger, required_action,
+  cadence (per_event/daily/weekly/monthly).
+- weekly_review_questions: 3-5 short questions the owner asks each
+  week. At least one references each keep_human_area thematically.
 - compliance_or_legal_flags: may be an empty list.
+
+JSON only.
 """
 
 
 PLAYBOOK_BUILDER_PROMPT = """\
 You are producing the first version of an operational AI Playbook for
-a small business.
+a small business. Be terse — each string ≤ 30 words.
 
 Parsed intake (JSON):
 {parsed_intake_json}
@@ -168,17 +172,23 @@ Risk and agency map (JSON):
 Produce a `FirstPlaybook`:
 
 - title: e.g. "<Business descriptor> — AI Playbook v1".
-- business_summary: 2-3 sentences synthesising the business.
+- business_summary: 2-3 short sentences.
 - workflow_entries: EXACTLY one PlaybookEntry per workflow in
   workflow_map.workflows. For each:
     - workflow_id (matches the workflow_map id).
-    - current_status: "experimenting" for the bet's target_workflow_id.
-      "not_yet_tested" for workflows NOT in
-      leverage_analysis.overall_top_three_ids. For other top-3
-      workflows pick "not_yet_tested" or "experimenting" by bet relevance.
-    - summary: 1-2 sentences.
-- rules_for_human_involvement: at LEAST 3, drawn from
-  risk_and_agency_map's keep_human_areas and agency_checkpoints.
-- open_questions: things V1 cannot answer for this business.
+    - current_status: MUST follow these rules without exception:
+        * If workflow_id == thirty_day_bet.target_workflow_id
+          → "experimenting" (this is mandatory; do not pick anything else).
+        * Else if workflow_id NOT in
+          leverage_analysis.overall_top_three_ids
+          → "not_yet_tested".
+        * Else (other top-3 workflows)
+          → "not_yet_tested".
+    - summary: 1 short sentence.
+- rules_for_human_involvement: 3-5 entries drawn from
+  risk_and_agency_map.
+- open_questions: 2-4 entries.
 - next_review_offset_days: default 30.
+
+JSON only.
 """
