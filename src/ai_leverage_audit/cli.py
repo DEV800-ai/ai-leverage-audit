@@ -48,7 +48,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _run_audit(intake_path: str, output_path: str) -> int:
-    from leverage_platform.llm import AnthropicProvider
+    from leverage_platform.llm.anthropic import AnthropicProvider
     from leverage_platform.runtime import AgentContext
     from leverage_platform.storage import SQLiteStore
 

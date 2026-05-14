@@ -124,7 +124,7 @@ async def test_audit_runs_end_to_end_against_real_anthropic(
 
     Set ANTHROPIC_API_KEY and RUN_LIVE_TESTS=1 to enable. Costs real money.
     """
-    from leverage_platform.llm import AnthropicProvider
+    from leverage_platform.llm.anthropic import AnthropicProvider
 
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
