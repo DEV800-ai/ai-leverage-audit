@@ -47,6 +47,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to write the Audit report JSON. Use '-' for stdout (default).",
     )
 
+    render = subparsers.add_parser(
+        "render",
+        help="Render a completed Audit as friend-shareable markdown.",
+    )
+    render.add_argument(
+        "--db",
+        default="audit.db",
+        help="SQLite path the Audit was written to (default: audit.db).",
+    )
+    render.add_argument(
+        "--workflow-run-id",
+        default=None,
+        help="UUID of the run to render. If omitted, renders the most recent succeeded run.",
+    )
+    render.add_argument(
+        "--output",
+        default="-",
+        help="Path to write the markdown file. Use '-' for stdout (default).",
+    )
+
     return parser
 
 
@@ -138,12 +158,39 @@ def _run_audit(intake_path: str, output_path: str) -> int:
         store.close()
 
 
+def _render_audit_command(
+    db_path: str, workflow_run_id: str | None, output_path: str
+) -> int:
+    from uuid import UUID
+
+    from ai_leverage_audit.render import render_from_db, write_rendered
+
+    if not Path(db_path).exists():
+        print(f"audit db not found: {db_path}", file=sys.stderr)
+        return 2
+
+    try:
+        run_id = UUID(workflow_run_id) if workflow_run_id else None
+        content = render_from_db(db_path, workflow_run_id=run_id)
+    except ValueError as exc:
+        print(f"render failed: {exc}", file=sys.stderr)
+        return 2
+
+    write_rendered(content, output_path)
+    if output_path != "-":
+        print(f"audit rendered to {output_path}", file=sys.stderr)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
     if args.command == "run":
         return _run_audit(args.intake, args.output)
+
+    if args.command == "render":
+        return _render_audit_command(args.db, args.workflow_run_id, args.output)
 
     parser.print_help()
     return 0
