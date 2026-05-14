@@ -29,9 +29,10 @@ Attach: [`fixtures/intakes/INTAKE_TEMPLATE.md`](../fixtures/intakes/INTAKE_TEMPL
 2. **Convert to AuditIntake JSON.** Save as `fixtures/intakes/real_<name>.json`. (I'll do this for you if you paste the text — it's mechanical.)
 3. **Run the audit:**
    ```bash
-   LLM_PROVIDER=openai LLM_MODEL=gpt-4o-mini \
+   LLM_PROVIDER=openai \
    uv run audit run --intake fixtures/intakes/real_<name>.json --output reports/<name>.json
    ```
+   (Default model is `gpt-4o`. We tested `gpt-4o-mini` on the first 3 real intakes and it's not reliable enough — it occasionally drops required Pydantic fields and skips consistency rules like "high-judgment → keep_human ≥ 30%". gpt-4o handles both cleanly at ~10x the cost, which is still trivial.)
 4. **Inspect the output.** If `accepted=false`, look at which rules failed (the parser/diagnoser/leverage agents are the usual culprits) and decide if it's a prompt issue or a real-data quirk worth iterating on.
 5. **Share the bet with the owner.** Either send the raw JSON (technical owners) or a written summary (everyone else). What matters: the **30-day bet** — its hypothesis, success metric, failure metric, weekly plan.
 6. **Schedule the 15-min conversation** to ask: *"is this bet specific to you?"* and *"would you actually try it?"*
@@ -78,6 +79,11 @@ V1 ships when, across the 5 real intakes:
 
 ## Pricing reality check
 
-At gpt-4o-mini, ~$0.005/audit. Five real intakes + a few re-runs is ~$0.05–$0.10 total. Trivial.
+At **gpt-4o** (recommended for Gate 3 reliability): ~$0.06/audit. Five real intakes + a few re-runs is ~$0.30–$0.50 total. Negligible.
 
-For comparison, gpt-4o would be ~$0.05/audit (10x), Claude Sonnet ~$0.04/audit. Gate 3 doesn't require a more expensive model unless something noticeably breaks on mini.
+`gpt-4o-mini` is ~10x cheaper (~$0.005/audit) but on the first batch of real intakes we observed:
+- ~1 in 3 runs hits a Pydantic ValidationError (model drops a required field).
+- Consistency rules (`high_judgment → keep_human ≥ 30%`) violated despite explicit prompt instruction.
+- Refused-area coverage less reliable.
+
+Worth retrying on mini once gpt-4.1 family stabilises or when prompts are further tuned, but not for Gate 3 user-facing validation.
