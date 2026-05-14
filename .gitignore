@@ -9,3 +9,8 @@ build/
 *.db
 *.sqlite
 .env
+
+# Per-owner audit outputs. Reports themselves are sensitive (business info),
+# kept locally only.
+reports/
+fixtures/intakes/real_*.json
