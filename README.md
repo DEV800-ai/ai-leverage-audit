@@ -32,6 +32,14 @@ Optional env vars: `LLM_MODEL` overrides the provider default (e.g. `LLM_MODEL=g
 
 Outputs a JSON report with the `workflow_run_id` and the full `EvalReport`. Intermediate artifacts (parsed intake, workflow map, leverage analysis, 30-day bet, risk + agency map, first playbook) are persisted as `Artifact` rows in `audit.db`.
 
+### Rendering an Audit as a friend-shareable doc
+
+```bash
+uv run audit render --db audit.db --output report.md
+```
+
+Renders the most recent succeeded run to a single markdown document — workflow map, top-3 leverage workflows, the 30-day bet with hypothesis + success/failure metrics, keep-human areas, weekly review questions, and the day-0 playbook. Pass `--workflow-run-id <uuid>` to pick a specific older run, or `--output -` to print to stdout.
+
 ## Local development
 
 ```bash
