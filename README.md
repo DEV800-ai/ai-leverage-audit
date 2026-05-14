@@ -14,31 +14,31 @@ The full product spec lives in the [`leverage-platform`](https://github.com/DEV8
 
 Next: **Gate 3** — 5 friend-and-family real intakes meet `PRODUCT_MVP.md` §7 acceptance.
 
-### Running a live Audit
-
-Anthropic (default):
+### Running a live Audit — one command
 
 ```bash
-ANTHROPIC_API_KEY=sk-ant-... uv run audit run --intake fixtures/intakes/synthetic_consultant.json
+LLM_PROVIDER=openai OPENAI_API_KEY=sk-... \
+  uv run audit run \
+    --intake fixtures/intakes/synthetic_consultant.json \
+    --output report.json \
+    --markdown report.md
 ```
 
-OpenAI:
+Produces both outputs in one call. The JSON is the platform's full audit log; the markdown is friend-shareable (workflow map, top-3 leverage workflows, 30-day bet with success/failure metrics, keep-human areas, weekly review questions, day-0 playbook). If the audit's `EvalReport` is rejected, the markdown step is skipped — inspect the JSON to see which rules failed.
 
-```bash
-LLM_PROVIDER=openai OPENAI_API_KEY=sk-... uv run audit run --intake fixtures/intakes/synthetic_consultant.json
-```
+Anthropic works the same way (it's the default provider — drop `LLM_PROVIDER=openai` and use `ANTHROPIC_API_KEY` instead).
 
-Optional env vars: `LLM_MODEL` overrides the provider default (e.g. `LLM_MODEL=gpt-4o-mini`), `AUDIT_DB` overrides the SQLite path, `AUDIT_TENANT_ID` overrides the tenant attribution string (default `"default"` per `PRODUCT_MVP.md` §10).
+Optional env vars: `LLM_MODEL` overrides the provider default (e.g. `LLM_MODEL=gpt-4o-mini`), `AUDIT_DB` overrides the SQLite path, `AUDIT_TENANT_ID` overrides the tenant attribution string.
 
-Outputs a JSON report with the `workflow_run_id` and the full `EvalReport`. Intermediate artifacts (parsed intake, workflow map, leverage analysis, 30-day bet, risk + agency map, first playbook) are persisted as `Artifact` rows in `audit.db`.
+Intermediate artifacts (parsed intake, workflow map, leverage analysis, 30-day bet, risk + agency map, first playbook) are persisted as `Artifact` rows in `audit.db`.
 
-### Rendering an Audit as a friend-shareable doc
+### Re-rendering an older Audit
 
 ```bash
 uv run audit render --db audit.db --output report.md
 ```
 
-Renders the most recent succeeded run to a single markdown document — workflow map, top-3 leverage workflows, the 30-day bet with hypothesis + success/failure metrics, keep-human areas, weekly review questions, and the day-0 playbook. Pass `--workflow-run-id <uuid>` to pick a specific older run, or `--output -` to print to stdout.
+Renders the most recent succeeded run from the SQLite store. Pass `--workflow-run-id <uuid>` to pick a specific older run, or `--output -` to print to stdout. Useful when you want to regenerate the friend-shareable doc after iterating on the renderer.
 
 ## Local development
 

@@ -1,7 +1,12 @@
 """Command-line entry point for the AI Leverage Audit.
 
-`audit run --intake <path>` runs the full Audit workflow on a JSON intake
-and writes the report (as JSON) to stdout or to `--output`.
+`audit run --intake X.json --output X.json --markdown X.md` runs the full
+workflow and produces both the JSON report and a friend-shareable
+markdown render in one call. The markdown is skipped when the audit's
+EvalReport is rejected — inspect the JSON in that case.
+
+`audit render --db audit.db --output X.md` re-renders a completed run
+from the SQLite store. Useful for older runs after iteration.
 
 Environment variables consumed at runtime:
 - LLM_PROVIDER: "anthropic" (default) or "openai".
@@ -45,6 +50,14 @@ def build_parser() -> argparse.ArgumentParser:
         "--output",
         default="-",
         help="Path to write the Audit report JSON. Use '-' for stdout (default).",
+    )
+    run.add_argument(
+        "--markdown",
+        default=None,
+        help=(
+            "Also write a friend-shareable markdown rendering to this path. "
+            "Skips rendering if the workflow's EvalReport was rejected."
+        ),
     )
 
     render = subparsers.add_parser(
@@ -112,7 +125,7 @@ def _build_provider() -> object | None:
     return None
 
 
-def _run_audit(intake_path: str, output_path: str) -> int:
+def _run_audit(intake_path: str, output_path: str, markdown_path: str | None) -> int:
     from leverage_platform.runtime import AgentContext
     from leverage_platform.storage import SQLiteStore
 
@@ -131,7 +144,8 @@ def _run_audit(intake_path: str, output_path: str) -> int:
     if provider is None:
         return 2
 
-    store = SQLiteStore(os.environ.get("AUDIT_DB", "audit.db"))
+    db_path = os.environ.get("AUDIT_DB", "audit.db")
+    store = SQLiteStore(db_path)
 
     try:
         ctx = AgentContext(
@@ -145,13 +159,28 @@ def _run_audit(intake_path: str, output_path: str) -> int:
             "workflow_run_id": str(workflow_id),
             "eval_report": report.model_dump(mode="json"),
         }
-        rendered = json.dumps(out, indent=2)
+        rendered_json = json.dumps(out, indent=2)
 
         if output_path == "-":
-            print(rendered)
+            print(rendered_json)
         else:
-            Path(output_path).write_text(rendered)
+            Path(output_path).write_text(rendered_json)
             print(f"audit report written to {output_path}", file=sys.stderr)
+
+        if markdown_path:
+            if report.accepted:
+                from ai_leverage_audit.render import render_from_db, write_rendered
+
+                md = render_from_db(db_path, workflow_run_id=workflow_id)
+                write_rendered(md, markdown_path)
+                if markdown_path != "-":
+                    print(f"audit rendered to {markdown_path}", file=sys.stderr)
+            else:
+                print(
+                    "skipping markdown render — EvalReport was rejected. "
+                    "Inspect the JSON output for details.",
+                    file=sys.stderr,
+                )
 
         return 0 if report.accepted else 1
     finally:
@@ -187,7 +216,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "run":
-        return _run_audit(args.intake, args.output)
+        return _run_audit(args.intake, args.output, args.markdown)
 
     if args.command == "render":
         return _render_audit_command(args.db, args.workflow_run_id, args.output)
