@@ -17,39 +17,23 @@ Next: **Gate 2** — implement the 7 agents, prompts, and eval config from `PROD
 ## Local development
 
 ```bash
-# Clone leverage-platform as a sibling directory:
-git clone git@github.com:DEV800-ai/leverage-platform.git ../leverage-platform
-
-# Create the venv + install the product's own deps:
-uv sync --extra dev
-
-# Install the sibling platform in editable mode:
-uv pip install -e ../leverage-platform
-
-# Smoke check:
+uv sync --extra dev          # installs leverage-platform from GitHub (public)
 uv run audit --help
-
-# Tests:
 uv run pytest
 ```
 
-The third command (installing the sibling platform) is a manual step — `leverage-platform` is deliberately **not** declared in `pyproject.toml` because attempting to declare a private local-path dep there breaks CI (uv resolves it regardless of which extras are selected). With the platform installed, `test_smoke.py::test_leverage_platform_optional_at_gate_1` actually exercises the import. Without it, that test is auto-skipped.
+Working against an in-progress sibling checkout of `leverage-platform`? After `uv sync`, override the GitHub-resolved version with a local editable install:
 
-## Gate 1 vs Gate 2 — CI explanation
+```bash
+git clone git@github.com:DEV800-ai/leverage-platform.git ../leverage-platform
+uv pip install -e ../leverage-platform
+```
 
-`leverage-platform` is currently a private repo. The product fork's CI workflow cannot `git clone` it without credentials. Two paths to fix:
+The product's smoke test imports `leverage_platform.runtime.agent` to confirm the sibling is reachable.
 
-1. **Make `leverage-platform` public** — preferred long-term; it's reusable infra with no secrets. Decided at Gate 2 boundary.
-2. **Add a deploy key on the platform repo** — works while the platform stays private. Defers the decision.
+## CI
 
-For **Gate 1**, CI skips the platform dependency entirely:
-
-- ✅ ruff lint
-- ✅ pytest (the platform-import test is auto-skipped)
-- ✅ uv build
-- ✅ `audit --help`
-
-At **Gate 2**, when the first real e2e test exists and the smoke test must actually import platform code, one of paths (1) or (2) above gets resolved.
+GitHub Actions runs ruff + pytest + uv build + `audit --help` on push to `main` and pull requests. `leverage-platform` is fetched from its public GitHub repo as a regular dependency, so CI imports the same platform code as local dev. No deploy key, no auth wall.
 
 ## Package layout (will grow at Gate 2)
 

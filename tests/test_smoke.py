@@ -1,14 +1,12 @@
-"""Gate 1 smoke tests — proves the product package imports and the CLI runs.
+"""Smoke tests — proves the product package imports, the CLI runs, and the
+sibling `leverage-platform` package is reachable.
 
-Platform integration (importing `leverage_platform.*`) is verified at Gate 2,
-where the first real e2e test introduces a real workflow. The split is
-deliberate: Gate 1 catches packaging and CLI-wiring issues without needing
-CI access to the private leverage-platform repo. See README.md.
+Now that leverage-platform is a public repo and pinned as a regular
+dependency (see pyproject.toml), the platform import is no longer
+optional. CI must satisfy it before Gate 2 work begins.
 """
 
 from __future__ import annotations
-
-import importlib.util
 
 import pytest
 
@@ -55,20 +53,9 @@ def test_cli_run_subcommand_is_placeholder(
     assert "not yet implemented" in captured.err
 
 
-def test_leverage_platform_optional_at_gate_1() -> None:
-    """leverage-platform may or may not be installed at Gate 1.
-
-    Locally, after `uv pip install -e ../leverage-platform`, the import works.
-    In CI (Gate 1) the platform is not installed — see README.md. Gate 2
-    makes it mandatory.
-    """
-    spec = importlib.util.find_spec("leverage_platform")
-    if spec is None:
-        pytest.skip(
-            "leverage_platform not installed; expected in CI at Gate 1. "
-            "For local integration: `uv pip install -e ../leverage-platform`."
-        )
+def test_leverage_platform_is_importable() -> None:
+    """leverage-platform is a required dependency; the import must work."""
     import leverage_platform  # noqa: F401 — import-side-effects-only assertion
 
-    # If we got here, the platform imported. Smoke-check one symbol exists.
+    # Smoke-check that a representative platform symbol resolves.
     from leverage_platform.runtime import agent  # noqa: F401

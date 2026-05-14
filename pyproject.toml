@@ -5,6 +5,7 @@ description = "AI Operating Mentor for solopreneurs and small business owners �
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
 dependencies = [
+    "leverage-platform @ git+https://github.com/DEV800-ai/leverage-platform.git@main",
     "pydantic>=2.7",
 ]
 
@@ -15,17 +16,14 @@ dev = [
     "ruff>=0.6",
 ]
 
-# Note on leverage-platform: deliberately NOT declared as a dependency
-# in pyproject.toml. It's a private sibling repo, and listing it via
-# [tool.uv.sources] breaks CI (uv tries to resolve it even when its
-# extra is excluded). For local development, after `uv sync --extra dev`,
-# install the platform with:
+# Local development: to work against an in-progress sibling checkout
+# instead of the published main branch, override after `uv sync`:
 #
 #     uv pip install -e ../leverage-platform
 #
-# At Gate 2, when CI must run e2e tests that actually use platform code,
-# this gets revisited — either by making leverage-platform public or by
-# adding a deploy key. See README.md "Gate 1 vs Gate 2 — CI explanation".
+# Pin to a specific SHA in this file when the platform stabilises and
+# we want reproducible builds:
+#     "leverage-platform @ git+https://github.com/DEV800-ai/leverage-platform.git@<sha>"
 
 [project.scripts]
 audit = "ai_leverage_audit.cli:main"
@@ -36,6 +34,11 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ai_leverage_audit"]
+
+# Required because the leverage-platform dependency uses a direct git URL.
+# Pin to a specific SHA once the platform stabilises (see [project.dependencies]).
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.ruff]
 line-length = 100
