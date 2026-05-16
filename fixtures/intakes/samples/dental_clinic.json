@@ -1,0 +1,15 @@
+{
+    "business_type": "Local dental clinic — general dentistry and patient care",
+    "current_role": "Practicing dentist and clinic manager (owner-operator)",
+    "team_size": 6,
+    "months_in_business": 72,
+    "weekly_tasks_text": "Answer new patient calls and WhatsApp messages; schedule appointments and reschedule cancellations; send appointment reminders 24 hours before visits; follow up with patients after treatments; prepare treatment plans and price estimates; track unpaid invoices and insurance paperwork; order dental supplies and manage inventory; post 1-2 social media updates per week; review Google reviews and respond to patient feedback; coordinate staff shifts and vacation requests.",
+    "current_tools_text": "Google Calendar, WhatsApp Business, Gmail, Excel for tracking, dedicated clinic management software, Google Business Profile, Facebook and Instagram for posts.",
+    "top_time_sinks_text": "Repeated WhatsApp questions from patients; manual appointment reminders; rescheduling missed or canceled appointments; following up on unpaid bills; writing similar treatment explanations again and again.",
+    "error_sensitive_areas_text": "Patient medical information; appointment dates and treatment details; billing and insurance details; medication or post-treatment instructions; consent forms.",
+    "customer_facing_areas_text": "Phone calls with patients; WhatsApp messages; appointment reminders; post-treatment follow-ups; Google reviews replies; treatment plan explanations.",
+    "primary_goal_text": "Reduce admin load and missed follow-ups without making patient communication feel robotic.",
+    "weekly_time_to_invest_hours": 2,
+    "monthly_budget_usd": 150,
+    "things_owner_refuses_to_automate_text": "Final medical advice; sensitive patient complaints; treatment recommendations; pricing negotiations for major treatments."
+}

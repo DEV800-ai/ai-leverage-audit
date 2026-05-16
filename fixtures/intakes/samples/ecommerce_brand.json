@@ -1,0 +1,15 @@
+{
+    "business_type": "Small direct-to-consumer e-commerce brand selling handmade home decor products",
+    "current_role": "Owner-operator managing listings, marketing, customer support, and fulfillment coordination",
+    "team_size": 3,
+    "months_in_business": 24,
+    "weekly_tasks_text": "Write and update product descriptions; respond to customer questions about shipping, materials, and customization; process new orders and coordinate packing; track delayed shipments; send order status updates; create weekly email campaigns; post product photos and promotions on Instagram and Pinterest; handle return and refund requests; review inventory levels; analyze which products are selling best.",
+    "current_tools_text": "Shopify for storefront, Gmail for support, Instagram and Pinterest for marketing, Canva for visuals, Mailchimp for email campaigns, Google Sheets for inventory, Shippo for shipping, Stripe and PayPal for payments.",
+    "top_time_sinks_text": "Answering repeated shipping and customization questions; writing product descriptions and marketing copy; manually checking delayed shipments; creating email campaigns from scratch; updating inventory spreadsheets; handling return requests case by case.",
+    "error_sensitive_areas_text": "Customer shipping addresses; custom product details; refund eligibility; inventory availability; delivery promises; payment and order status.",
+    "customer_facing_areas_text": "Customer support emails; Shopify order updates; product pages; email campaigns; Instagram comments and DMs; return and refund communication.",
+    "primary_goal_text": "Reduce customer support load and improve marketing consistency without losing the brand's personal handmade tone.",
+    "weekly_time_to_invest_hours": 5,
+    "monthly_budget_usd": 200,
+    "things_owner_refuses_to_automate_text": "Final refund approval; responses to angry customers; custom design decisions; brand voice decisions for major campaigns."
+}

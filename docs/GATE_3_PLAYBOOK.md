@@ -23,10 +23,24 @@ You can swap one for a fifth shape if you have a better-fit contact.
 
 Attach: [`fixtures/intakes/INTAKE_TEMPLATE.md`](../fixtures/intakes/INTAKE_TEMPLATE.md) (or paste it inline).
 
-## Per-intake workflow
+## Reference profiles already committed
+
+`fixtures/intakes/samples/` contains 7 curated real-shape profiles (dental clinic, solo consultant, home cleaning, fitness studio, DTC e-commerce, podcaster, messy wedding-photographer). Use them as templates for what a good intake looks like, or as inputs to test the audit pipeline before sending it to a real friend.
+
+```bash
+# Run a sample end-to-end:
+LLM_PROVIDER=openai uv run audit run \
+  --intake fixtures/intakes/samples/dental_clinic.json \
+  --output reports/dental_clinic.json \
+  --markdown reports/dental_clinic.md
+```
+
+The schema-regression test in `tests/test_sample_intakes.py` keeps these from drifting silently.
+
+## Per-intake workflow (for real friend data)
 
 1. **Receive the response** as plain text (or markdown).
-2. **Convert to AuditIntake JSON.** Save as `fixtures/intakes/real_<name>.json`. (I'll do this for you if you paste the text — it's mechanical.)
+2. **Convert to AuditIntake JSON.** Save as `fixtures/intakes/real_<name>.json` — the `real_*.json` pattern is gitignored so live friend data never lands in git. (I'll do this for you if you paste the text — it's mechanical.)
 3. **Run the audit:**
    ```bash
    LLM_PROVIDER=openai \

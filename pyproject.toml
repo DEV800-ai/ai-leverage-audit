@@ -5,7 +5,11 @@ description = "AI Operating Mentor for solopreneurs and small business owners â€
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
 dependencies = [
-    "leverage-platform @ git+https://github.com/DEV800-ai/leverage-platform.git@main",
+    # Pinned to leverage-platform SHA 477914f (2026-05-14: cost CLI ships).
+    # Bump deliberately when the platform releases something the product wants;
+    # uv.lock pins the exact rev and uv won't bump it on `uv sync` unless the
+    # spec here changes.
+    "leverage-platform @ git+https://github.com/DEV800-ai/leverage-platform.git@477914f752a340aa182a8b6aa11bb8dc03e43e2d",
     "pydantic>=2.7",
 ]
 

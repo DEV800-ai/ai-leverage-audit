@@ -6,12 +6,9 @@ on:
   pull_request:
     branches: [main]
 
-# Gate 1 CI: deliberately does NOT install the private leverage-platform
-# repo. Smoke tests skip the platform import; the rest of the suite still
-# catches packaging, lint, and CLI-wiring issues.
-#
-# Gate 2 will introduce a deploy key (or make leverage-platform public)
-# so CI can run the first real e2e test.
+# leverage-platform is a public dependency declared in pyproject.toml (pinned
+# to a specific SHA, see the comment there). CI installs it via `uv sync` like
+# any other dep — no deploy key, no auth wall.
 
 jobs:
   test:
@@ -27,7 +24,7 @@ jobs:
       - name: Set up Python
         run: uv python install 3.12
 
-      - name: Install dependencies (without leverage-platform extra)
+      - name: Install dependencies
         run: uv sync --extra dev
 
       - name: Lint

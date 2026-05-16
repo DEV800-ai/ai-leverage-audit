@@ -10,9 +10,9 @@ The full product spec lives in the [`leverage-platform`](https://github.com/DEV8
 
 ## Status
 
-**Gate 2 — Synthetic Audit accepted.** All 7 agents, 7 schemas, prompts, 10 deterministic rules + 6-question rubric, and the workflow orchestration ship per [`PRODUCT_MVP.md`](https://github.com/DEV800-ai/leverage-platform/blob/main/docs/product/PRODUCT_MVP.md) §3–§6. The synthetic-consultant intake produces `EvalReport.accepted=true` end-to-end against `MockLLMProvider`. An opt-in live test exercises real Anthropic when `RUN_LIVE_TESTS=1` is set.
+**Gate 3 — Structurally accepted on 8 real-shape intakes** (gpt-4o, 8/8 with 16/16 criteria each). Profiles validated: dental clinic, solo consultant, home cleaning, fitness studio, DTC e-commerce, podcaster, freelance app developer (self-intake), and a deliberately messy wedding-photographer intake. See `fixtures/intakes/samples/` for the curated set. Live owner reactions (the only thing left of `PRODUCT_MVP.md` §7) start when the first friend gets their audit.
 
-Next: **Gate 3** — 5 friend-and-family real intakes meet `PRODUCT_MVP.md` §7 acceptance.
+Cycle 2+ continuation flow is **designed only** in [`docs/CYCLES.md`](docs/CYCLES.md) — to be implemented after the first owner reaches day 30.
 
 ### Running a live Audit — one command
 
@@ -61,27 +61,30 @@ The product's smoke test imports `leverage_platform.runtime.agent` to confirm th
 
 GitHub Actions runs ruff + pytest + uv build + `audit --help` on push to `main` and pull requests. `leverage-platform` is fetched from its public GitHub repo as a regular dependency, so CI imports the same platform code as local dev. No deploy key, no auth wall.
 
-## Package layout (will grow at Gate 2)
+## Package layout
 
 ```
 ai-leverage-audit/
-├── src/
-│   └── ai_leverage_audit/
-│       ├── __init__.py
-│       ├── cli.py              # Gate 1 (current)
-│       ├── schemas.py          # Gate 2
-│       ├── agents.py           # Gate 2
-│       ├── prompts.py          # Gate 2
-│       ├── eval_config.py      # Gate 2
-│       └── workflow.py         # Gate 2
-├── fixtures/intakes/           # Gate 2
+├── src/ai_leverage_audit/
+│   ├── cli.py                  # `audit run` + `audit render` entry points
+│   ├── schemas.py              # AuditIntake + 6 output schemas
+│   ├── prompts.py              # 6 LLM prompt templates
+│   ├── eval_config.py          # AuditState + 10 deterministic rules + 6-question rubric
+│   ├── agents.py               # 7 agents (6 LLM + 1 pure Critic)
+│   ├── workflow.py             # run_audit orchestration
+│   └── render.py               # JSON → friend-shareable markdown
+├── fixtures/intakes/
+│   ├── INTAKE_TEMPLATE.md      # friend-friendly questionnaire
+│   ├── synthetic_consultant.json   # the canonical Gate-2 mock-provider fixture
+│   └── samples/                # 7 curated real-shape profiles for replay
+├── docs/
+│   ├── GATE_3_PLAYBOOK.md      # how to collect + run real-friend intakes
+│   └── CYCLES.md               # paper design for continuation audits (not implemented)
 └── tests/
-    ├── test_smoke.py           # Gate 1 (current)
-    ├── test_intake_validation.py   # Gate 2
-    ├── test_rules.py               # Gate 2
-    └── test_workflow_e2e.py        # Gate 2
+    ├── test_smoke.py
+    ├── test_intake_validation.py
+    ├── test_rules.py
+    ├── test_render.py
+    ├── test_sample_intakes.py  # parametrized — each sample loads as AuditIntake
+    └── test_workflow_e2e.py    # mock-provider + opt-in live (RUN_LIVE_TESTS=1)
 ```
-
-## License / privacy
-
-Private repository. Do not redistribute.

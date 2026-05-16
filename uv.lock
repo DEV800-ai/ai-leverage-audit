@@ -20,7 +20,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "leverage-platform", git = "https://github.com/DEV800-ai/leverage-platform.git?rev=main" },
+    { name = "leverage-platform", git = "https://github.com/DEV800-ai/leverage-platform.git?rev=477914f752a340aa182a8b6aa11bb8dc03e43e2d" },
     { name = "pydantic", specifier = ">=2.7" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24" },
@@ -208,7 +208,7 @@ wheels = [
 [[package]]
 name = "leverage-platform"
 version = "0.0.0"
-source = { git = "https://github.com/DEV800-ai/leverage-platform.git?rev=main#8e19431e67aad6d2e5d12b0dd2ce66531cc6c51b" }
+source = { git = "https://github.com/DEV800-ai/leverage-platform.git?rev=477914f752a340aa182a8b6aa11bb8dc03e43e2d#477914f752a340aa182a8b6aa11bb8dc03e43e2d" }
 dependencies = [
     { name = "anthropic" },
     { name = "openai" },

@@ -1,0 +1,15 @@
+{
+    "business_type": "Boutique fitness studio offering small group classes and personal training",
+    "current_role": "Head trainer and operations manager (owner-operator)",
+    "team_size": 5,
+    "months_in_business": 42,
+    "weekly_tasks_text": "Respond to new class inquiries from Instagram, WhatsApp, and website forms; schedule trial classes and personal training sessions; send reminders before classes; track class attendance and no-shows; follow up with trial customers who did not subscribe; create weekly class schedules; post workout tips and class highlights on social media; manage membership renewals and failed payments; answer repeated questions about pricing, class levels, and cancellations; collect feedback from members after workshops or challenges.",
+    "current_tools_text": "Instagram for inquiries, WhatsApp Business, Google Calendar, Gmail, Google Sheets for tracking, Calendly for trials, Stripe for payments, a simple booking platform for classes.",
+    "top_time_sinks_text": "Repeating the same pricing and schedule answers; following up manually with trial customers; managing class cancellations and rescheduling; creating social media content every week; tracking failed payments and membership renewals.",
+    "error_sensitive_areas_text": "Customer health limitations or injury notes; class capacity limits; payment status; membership cancellation terms; personal training schedule changes.",
+    "customer_facing_areas_text": "Instagram DMs; WhatsApp messages; trial class follow-ups; class reminders; membership renewal messages; social media posts; feedback requests.",
+    "primary_goal_text": "Convert more trial customers into paying members while reducing manual follow-up and scheduling work.",
+    "weekly_time_to_invest_hours": 3,
+    "monthly_budget_usd": 120,
+    "things_owner_refuses_to_automate_text": "Fitness or injury-related advice; final decisions about refunds; sensitive member complaints; personal motivation messages to long-term clients."
+}

@@ -1,0 +1,15 @@
+{
+    "business_type": "Independent business consultant helping small companies improve operations and pricing",
+    "current_role": "Solo consultant — owner-operator",
+    "team_size": 1,
+    "months_in_business": 18,
+    "weekly_tasks_text": "Research prospects on LinkedIn; send cold outreach emails; follow up with leads who did not respond; prepare discovery call notes; write client proposals; create slide decks for workshops; summarize client meetings; prepare invoices; publish LinkedIn posts twice per week; track active opportunities in a spreadsheet.",
+    "current_tools_text": "Gmail, Google Docs, Google Slides, Google Sheets, LinkedIn, Calendly, Zoom, Stripe and PayPal for invoicing.",
+    "top_time_sinks_text": "Writing custom proposals from scratch every time; summarizing long client meetings; remembering follow-ups across many leads; turning messy notes into polished client materials; creating consistent LinkedIn content.",
+    "error_sensitive_areas_text": "Client pricing; proposal scope; confidential client notes; contract terms; invoice details.",
+    "customer_facing_areas_text": "Outreach emails; discovery calls; proposals; workshop decks; follow-up emails; LinkedIn content.",
+    "primary_goal_text": "Increase sales pipeline consistency and reduce time spent preparing proposals and follow-ups.",
+    "weekly_time_to_invest_hours": 4,
+    "monthly_budget_usd": 75,
+    "things_owner_refuses_to_automate_text": "Final proposal approval; strategic recommendations to clients; sensitive negotiation emails; relationship-building messages to warm leads."
+}

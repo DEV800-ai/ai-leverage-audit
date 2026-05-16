@@ -1,0 +1,15 @@
+{
+    "business_type": "Independent podcaster producing a weekly interview show on entrepreneurship, technology, and personal growth",
+    "current_role": "Host, producer, editor coordinator, and audience growth lead (owner-operator)",
+    "team_size": 2,
+    "months_in_business": 20,
+    "weekly_tasks_text": "Research potential guests and topics; send guest outreach emails and follow-ups; schedule recording sessions; prepare interview questions and episode outlines; record weekly podcast episodes; review transcripts and pull key highlights; coordinate audio/video editing; write episode titles, descriptions, and show notes; create short clips for LinkedIn, YouTube Shorts, Instagram, and TikTok; publish episodes to podcast platforms and promote them on social media.",
+    "current_tools_text": "Gmail, Google Calendar, Calendly for scheduling, Zoom or Riverside for recording, Descript for editing, Spotify for Podcasters, YouTube, Google Docs, Notion for show planning, Canva for visuals, LinkedIn / Instagram / TikTok for distribution.",
+    "top_time_sinks_text": "Finding and researching good guests; writing personalized outreach messages; preparing strong interview questions; turning long episodes into short clips and posts; writing show notes and episode descriptions; remembering guest follow-ups and publishing deadlines.",
+    "error_sensitive_areas_text": "Guest names, titles, and company details; episode release dates; attribution for quotes or claims; sponsor mentions; copyrighted music or media; sensitive guest statements that should be reviewed before publishing.",
+    "customer_facing_areas_text": "Guest outreach emails; guest scheduling and reminders; episode descriptions and show notes; social media posts; newsletter updates; sponsor mentions; audience comments and replies.",
+    "primary_goal_text": "Increase consistency and audience growth by reducing production workload and turning each episode into more reusable content assets.",
+    "weekly_time_to_invest_hours": 4,
+    "monthly_budget_usd": 100,
+    "things_owner_refuses_to_automate_text": "Final guest selection; final approval of episode titles; sensitive editing decisions; sponsor relationship communication; personal replies to important guests or listeners."
+}

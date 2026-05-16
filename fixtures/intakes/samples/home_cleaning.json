@@ -1,0 +1,15 @@
+{
+    "business_type": "Local home cleaning service — recurring residential cleaning",
+    "current_role": "Owner-operator managing bookings, customer communication, and a small cleaning team",
+    "team_size": 4,
+    "months_in_business": 30,
+    "weekly_tasks_text": "Receive new booking requests by phone, WhatsApp, and website form; send price estimates based on home size and service type; schedule recurring cleaning appointments; remind customers before visits; assign jobs to cleaners; track cleaner availability; follow up after service for feedback; handle complaints or change requests; send payment reminders; post before/after photos and promotions on social media.",
+    "current_tools_text": "WhatsApp Business for inquiries, Google Calendar, Gmail, Google Sheets, Wix website form, QuickBooks for invoicing, Instagram and Facebook for posts.",
+    "top_time_sinks_text": "Repeating the same pricing questions to prospects; coordinating schedule changes; checking cleaner availability; manually sending reminders; chasing late payments; rewriting similar promotional posts.",
+    "error_sensitive_areas_text": "Customer address and access instructions; cleaner assignment; appointment time and date; price quote accuracy; payment status; customer complaints.",
+    "customer_facing_areas_text": "WhatsApp booking messages; website inquiry responses; price estimates; appointment reminders; post-service feedback requests; complaint handling; social media posts.",
+    "primary_goal_text": "Respond faster to new leads and reduce scheduling chaos while keeping human control over complaints and pricing exceptions.",
+    "weekly_time_to_invest_hours": 3,
+    "monthly_budget_usd": 100,
+    "things_owner_refuses_to_automate_text": "Serious customer complaints; final discounts or refunds; firing or replacing cleaners; entering homes without human-confirmed instructions."
+}
