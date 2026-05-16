@@ -142,9 +142,39 @@ Leverage analysis (JSON):
 Produce a `ThirtyDayBet` against the top-ranked workflow (or one of
 the top three if it fits the owner's budgets better):
 
+MINIMALITY RULE (mandatory):
+Owners consistently report that bets covering an entire workflow are
+too ambitious for 30 days. Target ONE NARROW SLICE of the chosen
+workflow — not the whole workflow.
+
+If the workflow is "Lead management" (with sub-activities: intake
+messages, qualification, scheduling, follow-up), pick EXACTLY ONE
+sub-activity for the 30-day bet. The other sub-activities stay
+untouched until a future cycle.
+
+The hypothesis, success_metric, and first_48h_actions must all
+reference this single sub-activity by name. Do NOT mix multiple
+sub-activities into one bet.
+
+Examples of properly-narrow bets (good):
+- "Automate the first reply to inbound WhatsApp lead inquiries"
+  (NOT "automate lead management")
+- "Draft initial proposal templates for fixed-fee engagements"
+  (NOT "automate the entire proposal workflow")
+- "Send appointment reminders 24h before visits"
+  (NOT "automate patient communication")
+
+Examples of bets that are too broad (bad):
+- "Automate appointment scheduling, reminders, and follow-ups"
+  (three sub-activities — pick one)
+- "Streamline content creation and social distribution"
+  (two sub-activities — pick one)
+
+Then complete:
+
 - target_workflow_id: MUST be one of
   leverage_analysis.overall_top_three_ids.
-- title: short.
+- title: short, referencing the ONE sub-activity.
 - hypothesis: "If we test X via Y, we will see <evidence> within 30 days."
 - success_metric: observable in 30 days. A measurable change, not a vibe.
 - failure_metric: a genuine off-ramp. Must DIFFER in substance from the

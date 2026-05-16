@@ -51,6 +51,8 @@ The schema-regression test in `tests/test_sample_intakes.py` keeps these from dr
 5. **Share the bet with the owner.** Send the `*.md` produced by `audit run --markdown` — it's friend-shareable. The raw JSON is for your records.
 6. **Send the post-audit feedback questionnaire** — [`AUDIT_FEEDBACK_TEMPLATE.md`](AUDIT_FEEDBACK_TEMPLATE.md). 3-minute async form covering the Gate 3 §7 qualitative bars (specific? would-try? what's missing? usefulness 1–5? day-30 check-in?). Either copy-paste the markdown into the same DM, or schedule a 15-min call instead if they're more verbal.
 
+   See `fixtures/feedback/samples/` for 8 synthetic example responses (7 per-profile + 1 deliberately messy friend-style). Useful when iterating on prompts: re-read them before changing the audit's behaviour, since the patterns there ("make the bet smaller", "say what you're assuming", "ask the questions you skipped") repeat across most real respondents and shouldn't be tuned away by one outlier.
+
 ## What to record per intake (use a spreadsheet)
 
 For each real intake — record these in a Google Sheet or text file as you go:
