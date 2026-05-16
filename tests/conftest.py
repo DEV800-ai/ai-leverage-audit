@@ -206,6 +206,13 @@ def _leverage_analysis_for(workflow_map: WorkflowMap) -> LeverageAnalysis:
                 automate_examples=[f"Draft the {wf.title.lower()} template"],
                 assist_examples=[f"Suggest improvements to {wf.title.lower()}"],
                 keep_human_examples=[f"Owner reviews each {wf.title.lower()} output"],
+                confidence="medium",
+                evidence_from_intake=[
+                    f"Intake lists '{wf.title.lower()}' among weekly recurring tasks."
+                ],
+                assumptions=[
+                    "Volume estimated from the intake's pain-point list, not measured."
+                ],
             )
         )
     top_three = [wid for wid, r in rankings.items() if r <= 3]

@@ -131,7 +131,8 @@ def render_audit_markdown(state: dict[str, object]) -> str:
     for w in sorted_levs[:3]:
         wf = _find_workflow(workflow_map, w.workflow_id)
         title = wf.title if wf else w.workflow_id
-        out.append(f"### #{w.rank} — {title}")
+        conf_label = f" · _confidence: {w.confidence}_" if w.confidence else ""
+        out.append(f"### #{w.rank} — {title}{conf_label}")
         out.append(f"_{w.rationale}_")
         out.append("")
         out.append(
@@ -146,6 +147,14 @@ def render_audit_markdown(state: dict[str, object]) -> str:
             f"- Suggested mix: **{w.automate_pct}% automate** / "
             f"{w.assist_pct}% assist / **{w.keep_human_pct}% keep human**"
         )
+        if w.evidence_from_intake:
+            out.append("- Evidence from your intake:")
+            for ev in w.evidence_from_intake:
+                out.append(f"  - _{ev}_")
+        if w.assumptions:
+            out.append("- Assumptions (intake didn't say):")
+            for a in w.assumptions:
+                out.append(f"  - {a}")
         if w.automate_examples:
             out.append(f"  - Automate: {', '.join(w.automate_examples)}")
         if w.assist_examples:

@@ -86,6 +86,21 @@ Scoring fields:
 - rank: 1 = highest leverage. UNIQUE ranks 1..N across all workflows.
 - rationale: ONE short sentence specific to this business (≤ 25 words).
 
+Honesty fields — every entry MUST include these, and they MUST be honest:
+- confidence: low / medium / high. Use "low" when the intake didn't
+  give specifics about volume, duration, or current tooling. Use "high"
+  ONLY when the intake gave concrete numbers and the workflow shape is
+  unambiguous.
+- evidence_from_intake: 1-3 short quotes or paraphrases from the
+  parsed_intake that justify this entry's scores. If you can't cite
+  anything specific, your confidence should be "low".
+- assumptions: 0-3 short statements of what you had to assume because
+  the intake didn't say. Empty list is fine ONLY if everything came
+  directly from the intake.
+
+The owner reads these. False precision is worse than honest uncertainty —
+the audit's credibility depends on confidence being calibrated.
+
 RANKING RULE (apply in order):
   1. Primary: rank by time_saved_hours_per_week_estimate, DESCENDING.
      The owner's primary_goal is to reclaim hours — a workflow that

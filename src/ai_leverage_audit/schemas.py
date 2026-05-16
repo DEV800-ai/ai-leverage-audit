@@ -121,6 +121,15 @@ class WorkflowLeverage(BaseModel):
     assist_examples: list[str]
     keep_human_examples: list[str]
 
+    # Honesty fields — optional for backwards compatibility with audits
+    # rendered before they were added. Older audit.db rows still validate.
+    # The leverage_analyst prompt instructs the LLM to populate them; when
+    # populated, the renderer surfaces them so the owner sees explicit
+    # uncertainty instead of false precision.
+    confidence: Literal["low", "medium", "high"] | None = None
+    evidence_from_intake: list[str] = Field(default_factory=list)
+    assumptions: list[str] = Field(default_factory=list)
+
     @model_validator(mode="after")
     def _check_pct_sum_and_examples(self) -> WorkflowLeverage:
         total = self.automate_pct + self.assist_pct + self.keep_human_pct

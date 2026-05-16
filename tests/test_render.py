@@ -101,6 +101,40 @@ def test_renders_first_48h_actions_as_checkboxes(intake: AuditIntake) -> None:
         assert f"- [ ] {action}" in md
 
 
+def test_renders_confidence_evidence_and_assumptions(intake: AuditIntake) -> None:
+    """When LeverageAnalysis entries carry honesty fields, the render surfaces them."""
+    md = render_audit_markdown(_full_state(intake))
+    assert "confidence:" in md
+    assert "Evidence from your intake:" in md
+    assert "Assumptions (intake didn't say):" in md
+
+
+def test_renders_without_honesty_fields_when_absent(intake: AuditIntake) -> None:
+    """Older audits without confidence/evidence/assumptions still render cleanly."""
+    state = _full_state(intake)
+    # Strip the honesty fields from every entry.
+    leverage = state["leverage_analysis"]
+    stripped = leverage.model_copy(update={  # type: ignore[attr-defined]
+        "per_workflow": [
+            w.model_copy(update={
+                "confidence": None,
+                "evidence_from_intake": [],
+                "assumptions": [],
+            })
+            for w in leverage.per_workflow  # type: ignore[attr-defined]
+        ]
+    })
+    state["leverage_analysis"] = stripped
+    md = render_audit_markdown(state)
+    # Headers stay intact even when fields are empty.
+    assert "## Your 30-day bet" in md
+    # Confidence label is absent when None.
+    assert "_confidence:" not in md
+    # Evidence/assumptions blocks are absent.
+    assert "Evidence from your intake:" not in md
+    assert "Assumptions (intake didn't say):" not in md
+
+
 def test_renders_keep_human_areas_with_severity(intake: AuditIntake) -> None:
     md = render_audit_markdown(_full_state(intake))
     state = _full_state(intake)
