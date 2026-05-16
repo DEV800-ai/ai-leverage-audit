@@ -48,8 +48,8 @@ The schema-regression test in `tests/test_sample_intakes.py` keeps these from dr
    ```
    (Default model is `gpt-4o`. We tested `gpt-4o-mini` on the first 3 real intakes and it's not reliable enough — it occasionally drops required Pydantic fields and skips consistency rules like "high-judgment → keep_human ≥ 30%". gpt-4o handles both cleanly at ~10x the cost, which is still trivial.)
 4. **Inspect the output.** If `accepted=false`, look at which rules failed (the parser/diagnoser/leverage agents are the usual culprits) and decide if it's a prompt issue or a real-data quirk worth iterating on.
-5. **Share the bet with the owner.** Either send the raw JSON (technical owners) or a written summary (everyone else). What matters: the **30-day bet** — its hypothesis, success metric, failure metric, weekly plan.
-6. **Schedule the 15-min conversation** to ask: *"is this bet specific to you?"* and *"would you actually try it?"*
+5. **Share the bet with the owner.** Send the `*.md` produced by `audit run --markdown` — it's friend-shareable. The raw JSON is for your records.
+6. **Send the post-audit feedback questionnaire** — [`AUDIT_FEEDBACK_TEMPLATE.md`](AUDIT_FEEDBACK_TEMPLATE.md). 3-minute async form covering the Gate 3 §7 qualitative bars (specific? would-try? what's missing? usefulness 1–5? day-30 check-in?). Either copy-paste the markdown into the same DM, or schedule a 15-min call instead if they're more verbal.
 
 ## What to record per intake (use a spreadsheet)
 
