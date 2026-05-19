@@ -10,7 +10,7 @@ The full product spec lives in the [`leverage-platform`](https://github.com/DEV8
 
 ## Status
 
-**Gate 3 — Structurally accepted on 8 real-shape intakes** (gpt-4o, 8/8 with 16/16 criteria each). Eight sanitized sample fixtures are committed: dental clinic, solo consultant, home cleaning, fitness studio, DTC e-commerce, podcaster, wedding photographer (deliberately messy), and supermarket owner. A self-intake (freelance app developer) was tested and accepted but not committed as a sanitized fixture. See `fixtures/intakes/samples/` and `docs/GATE_3_RESULTS.md` for the evidence. **Live owner reactions are the only remaining gate** — see `docs/LIVE_OWNER_REACTION_PLAYBOOK.md`.
+**Gate 3 — Structurally accepted on 8 real-shape intakes** (gpt-4o, 8/8 with 16/16 criteria each). Nine sanitized sample fixtures are committed: dental clinic, solo consultant, home cleaning, fitness studio, DTC e-commerce brand, podcaster, wedding photographer (deliberately messy), supermarket owner, and Shopify operator (high-volume customer support). A self-intake (freelance app developer) was tested and accepted but not committed as a sanitized fixture. See `fixtures/intakes/samples/` and `docs/GATE_3_RESULTS.md` for the evidence. **Live owner reactions are the only remaining gate** — see `docs/LIVE_OWNER_REACTION_PLAYBOOK.md`.
 
 The product follows a three-stage loop — **Diagnose → Test → Evolve** — documented in [`docs/PRODUCT_LIFECYCLE.md`](docs/PRODUCT_LIFECYCLE.md). Stage 3 (Evolve) is designed only in [`docs/CYCLES.md`](docs/CYCLES.md) and will be built after the first owner reaches day 30.
 
@@ -88,7 +88,7 @@ ai-leverage-audit/
 ├── fixtures/intakes/
 │   ├── INTAKE_TEMPLATE.md      # friend-friendly questionnaire (sections 1-5 + measurement baseline)
 │   ├── synthetic_consultant.json   # the canonical Gate-2 mock-provider fixture
-│   └── samples/                # 8 curated real-shape profiles for replay
+│   └── samples/                # 9 curated real-shape profiles for replay
 ├── fixtures/feedback/
 │   └── samples/                # 8 synthetic post-audit feedback responses
 ├── docs/
