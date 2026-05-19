@@ -24,6 +24,21 @@ Produce a `ParsedIntake`:
 - refused_automation_areas: extract 1-5 ATOMIC items (one concept
   per item, ≤ 8 words each). Break compound or multi-sentence text
   into separate items. May be empty list.
+- baseline_measurements: extract from measurement_context_text if
+  present. Produce one BaselineMeasurement entry per task the owner
+  measured. For each entry:
+    - task_or_workflow_ref: the task name the owner described.
+    - volume_per_week: number of units per week (float), or null.
+    - minutes_per_unit: time per unit in minutes (float), or null.
+    - mechanical_pct: integer 0-100, or null.
+    - error_rate_1_in_x: e.g. "1 in 20" → 20.0, or null.
+    - minutes_to_fix_error: float, or null.
+    - owner_review_pct_if_assisted: integer 0-100; convert "every
+      single one" → 100, "spot-check 1 in 5" → 20, or null.
+    - owner_success_description: owner's free-text "worked" answer,
+      or null.
+    - owner_stop_condition: owner's free-text stop condition, or null.
+  If measurement_context_text is absent or empty, return [].
 
 Be specific to the actual business described. Do not generalise.
 """
@@ -126,6 +141,7 @@ Mix fields — apply these hard constraints in order:
 
 Output also overall_top_three_ids: the three workflow_ids with ranks 1, 2, 3.
 
+{prior_playbook_section}
 Be specific to the owner. Do not pad. JSON only.
 """
 
@@ -177,8 +193,17 @@ Then complete:
 - title: short, referencing the ONE sub-activity.
 - hypothesis: "If we test X via Y, we will see <evidence> within 30 days."
 - success_metric: observable in 30 days. A measurable change, not a vibe.
+  BASELINE RULE: if parsed_intake.baseline_measurements contains an entry
+  whose task_or_workflow_ref matches the target workflow, you MUST anchor
+  the metric to the owner's own numbers. Example: if the owner reported
+  30 min/invoice and you target 40% reduction, write "under 18 min/invoice
+  (40% reduction from your stated 30 min average)" — not a number you
+  invent. If no baseline data exists, state the metric as a relative
+  improvement ("reduce by ~40% from your Week 1 measured average") so the
+  threshold is set after real measurement, not before.
 - failure_metric: a genuine off-ramp. Must DIFFER in substance from the
-  success_metric.
+  success_metric. Apply the same BASELINE RULE — anchor to owner numbers
+  when available, or express relative to Week 1 baseline when not.
 - weekly_plan: EXACTLY 4 entries, one per week (week 1..4).
 - first_48h_actions: 2-3 BITE-SIZED actions. The owner only has
   ~2/7 of their weekly_time_budget_hours available within 48 hours
@@ -194,6 +219,8 @@ Then complete:
 - estimated_setup_cost_usd: must be <= parsed_intake.monthly_budget_usd.
 
 The bet must be specific to the owner's tools, role, and primary_goal.
+
+{prior_outcome_section}
 """
 
 
@@ -278,6 +305,52 @@ Produce a `FirstPlaybook`:
   risk_and_agency_map.
 - open_questions: 2-4 entries.
 - next_review_offset_days: default 30.
+- cycle_number: set to 1 for a first audit. For continuation audits,
+  this value is provided in the prior_playbook_section below.
 
 JSON only.
+
+{prior_playbook_section}
+"""
+
+
+OUTCOME_PARSER_PROMPT = """\
+You are converting a small business owner's free-text outcome report into
+structured fields after they completed a 30-day AI experiment.
+
+Prior 30-day bet (JSON):
+{prior_bet_json}
+
+Owner's free-text outcome:
+{outcome_text}
+
+Produce an `OutcomeReport`:
+
+- prior_workflow_run_id: copy from the bet JSON's workflow context if
+  present, otherwise use the placeholder UUID provided.
+- prior_bet_title: copy the bet's title.
+- outcome: classify as "succeeded" / "failed" / "mixed" / "abandoned".
+  "succeeded" = success_metric clearly triggered. "failed" = failure
+  metric clearly triggered or owner gave up. "mixed" = partial results,
+  unclear which metric triggered. "abandoned" = owner stopped before
+  week 4 without a clear result.
+- success_metric_triggered: true if the owner's text indicates the
+  success condition was met, even partially. Err toward false if unclear.
+- failure_metric_triggered: true if the owner's text indicates the
+  failure condition was met. Err toward false if unclear.
+- actual_weekly_hours_invested: estimate from the text. If not stated,
+  use the bet's estimated_weekly_time_hours.
+- actual_setup_cost_usd: estimate from the text. If not stated, use 0.
+- what_worked_text: quote or paraphrase the most positive finding.
+  Minimum 30 characters. Must reflect what the owner actually said.
+- what_surprised_text: quote or paraphrase the biggest surprise
+  (positive or negative). Minimum 30 characters.
+- what_owner_would_change_text: quote or paraphrase the owner's
+  suggested change. Minimum 30 characters. If not stated, infer
+  from context.
+- intent: "continue" / "pivot" / "stop". "continue" = same direction.
+  "pivot" = different workflow or approach. "stop" = abandon AI here.
+
+Be honest about uncertainty — do not invent specifics the owner did not
+state. JSON only.
 """

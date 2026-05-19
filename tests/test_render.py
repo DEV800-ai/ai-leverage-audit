@@ -17,6 +17,7 @@ from ai_leverage_audit.workflow import run_audit
 from tests.conftest import (
     _accepted_eval_report,
     _bet_for,
+    _continuation_playbook_for,
     _leverage_analysis_for,
     _parsed_intake_for,
     _playbook_for,
@@ -204,6 +205,42 @@ async def test_load_state_from_db_round_trip(
 
     md = render_from_db(str(file_db), workflow_run_id=workflow_id)
     assert "## Your 30-day bet" in md
+
+
+def test_renders_cycle_number_in_title_for_continuation(intake: AuditIntake) -> None:
+    """Cycle 2+ audits prefix the title with 'Cycle N — '."""
+    state = _full_state(intake)
+    parsed = _parsed_intake_for(intake)
+    wfmap = _workflow_map_for(parsed)
+    leverage = _leverage_analysis_for(wfmap)
+    bet = _bet_for(parsed, leverage)
+    rank2_id = next(w.workflow_id for w in leverage.per_workflow if w.rank == 2)
+    bet2 = bet.model_copy(update={"target_workflow_id": rank2_id})
+    playbook2 = _continuation_playbook_for(wfmap, leverage, bet2, bet.target_workflow_id, "succeeded")
+    state["first_playbook"] = playbook2
+    md = render_audit_markdown(state)
+    assert "Cycle 2 — " in md
+
+
+def test_renders_last_outcome_summary_in_playbook(intake: AuditIntake) -> None:
+    """PlaybookEntry.last_outcome_summary appears in the playbook table when set."""
+    state = _full_state(intake)
+    parsed = _parsed_intake_for(intake)
+    wfmap = _workflow_map_for(parsed)
+    leverage = _leverage_analysis_for(wfmap)
+    bet = _bet_for(parsed, leverage)
+    rank2_id = next(w.workflow_id for w in leverage.per_workflow if w.rank == 2)
+    bet2 = bet.model_copy(update={"target_workflow_id": rank2_id})
+    playbook2 = _continuation_playbook_for(wfmap, leverage, bet2, bet.target_workflow_id, "succeeded")
+    state["first_playbook"] = playbook2
+    md = render_audit_markdown(state)
+    assert "Cycle 1 outcome: succeeded." in md
+
+
+def test_cycle_1_title_has_no_prefix(intake: AuditIntake) -> None:
+    """Cycle 1 audits (default) do not add a 'Cycle 1 — ' prefix."""
+    md = render_audit_markdown(_full_state(intake))
+    assert "Cycle 1 — " not in md
 
 
 def test_load_state_from_db_picks_latest_when_unspecified(tmp_path) -> None:

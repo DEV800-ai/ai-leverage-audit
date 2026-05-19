@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from ai_leverage_audit.schemas import AuditIntake
+from ai_leverage_audit.schemas import AuditIntake, BaselineMeasurement, ParsedIntake
 
 
 def _good_intake_kwargs(**overrides: object) -> dict[str, object]:
@@ -70,3 +70,49 @@ def test_refused_automation_field_optional() -> None:
         _good_intake_kwargs(things_owner_refuses_to_automate_text=None)
     )
     assert intake.things_owner_refuses_to_automate_text is None
+
+
+def test_measurement_context_text_optional() -> None:
+    """measurement_context_text is optional — existing intakes without it stay valid."""
+    intake = AuditIntake.model_validate(_good_intake_kwargs())
+    assert intake.measurement_context_text is None
+
+
+def test_measurement_context_text_accepted() -> None:
+    intake = AuditIntake.model_validate(
+        _good_intake_kwargs(measurement_context_text="Invoice processing: 3/week, 30 min each.")
+    )
+    assert intake.measurement_context_text is not None
+
+
+def test_baseline_measurement_partial_fields_valid() -> None:
+    """BaselineMeasurement accepts partial data — owner may answer only some questions."""
+    bm = BaselineMeasurement(task_or_workflow_ref="invoice processing", minutes_per_unit=30.0)
+    assert bm.volume_per_week is None
+    assert bm.minutes_per_unit == 30.0
+
+
+def test_baseline_measurement_pct_bounds() -> None:
+    with pytest.raises(ValidationError):
+        BaselineMeasurement(task_or_workflow_ref="x", mechanical_pct=101)
+    with pytest.raises(ValidationError):
+        BaselineMeasurement(task_or_workflow_ref="x", owner_review_pct_if_assisted=-1)
+
+
+def test_parsed_intake_baseline_defaults_empty() -> None:
+    """ParsedIntake.baseline_measurements defaults to [] when not supplied."""
+    pi = ParsedIntake(
+        business_summary="test",
+        weekly_tasks=[
+            {"title": "t1", "estimated_time_minutes_per_week": 60, "is_customer_facing": False, "is_error_sensitive": False},
+            {"title": "t2", "estimated_time_minutes_per_week": 30, "is_customer_facing": False, "is_error_sensitive": False},
+            {"title": "t3", "estimated_time_minutes_per_week": 20, "is_customer_facing": False, "is_error_sensitive": False},
+        ],
+        tools_in_use=[],
+        top_pain_points=[],
+        primary_goal="save time",
+        weekly_time_budget_hours=5,
+        monthly_budget_usd=50,
+        refused_automation_areas=[],
+    )
+    assert pi.baseline_measurements == []

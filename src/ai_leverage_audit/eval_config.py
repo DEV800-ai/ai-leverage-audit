@@ -19,6 +19,7 @@ from pydantic import BaseModel, ConfigDict
 from ai_leverage_audit.schemas import (
     FirstPlaybook,
     LeverageAnalysis,
+    OutcomeReport,
     ParsedIntake,
     RiskAndAgencyMap,
     ThirtyDayBet,
@@ -37,6 +38,21 @@ class AuditState(BaseModel):
     thirty_day_bet: ThirtyDayBet
     risk_and_agency_map: RiskAndAgencyMap
     first_playbook: FirstPlaybook
+
+
+class ContinuationAuditState(BaseModel):
+    """All artifacts of a continuation audit (cycle ≥ 2), bundled for rule eval."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    parsed_intake: ParsedIntake
+    workflow_map: WorkflowMap
+    leverage_analysis: LeverageAnalysis
+    thirty_day_bet: ThirtyDayBet
+    risk_and_agency_map: RiskAndAgencyMap
+    first_playbook: FirstPlaybook
+    outcome_report: OutcomeReport
+    prior_playbook: FirstPlaybook
 
 
 # ---------- Rule checks ----------
@@ -207,6 +223,31 @@ LEVERAGE_AUDIT_RULES: list[Rule[AuditState]] = [
     Rule(
         name="failure_not_identical_to_success",
         check=_failure_not_identical_to_success,
+    ),
+]
+
+
+def _rejected_workflow_not_retargeted(
+    state: ContinuationAuditState,
+) -> tuple[bool, str]:
+    rejected = {
+        e.workflow_id
+        for e in state.prior_playbook.workflow_entries
+        if e.current_status == "rejected"
+    }
+    target = state.thirty_day_bet.target_workflow_id
+    if target in rejected:
+        return False, (
+            f"bet target {target!r} was rejected in cycle "
+            f"{state.prior_playbook.cycle_number} and cannot be retargeted"
+        )
+    return True, f"bet target {target!r} is not a rejected workflow"
+
+
+CONTINUATION_AUDIT_RULES: list[Rule[ContinuationAuditState]] = [
+    Rule(
+        name="rejected_workflow_not_retargeted",
+        check=_rejected_workflow_not_retargeted,
     ),
 ]
 

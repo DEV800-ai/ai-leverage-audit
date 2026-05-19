@@ -1,105 +1,43 @@
-# Gate 3 Playbook — Collecting 5 Real Intakes
+# Gate 3 Playbook — Archived
 
-**Goal:** validate that the AI Leverage Audit produces useful output on real businesses, not just the synthetic-consultant fixture. Per [`PRODUCT_ROADMAP.md`](https://github.com/DEV800-ai/leverage-platform/blob/main/docs/product/PRODUCT_ROADMAP.md) §2.3 + §3.
+**Status:** Complete. Structural sample testing finished 2026-05. See [`GATE_3_RESULTS.md`](GATE_3_RESULTS.md) for the evidence table.
 
-**You already have 1 (the synthetic consultant). You need 4 more.**
+Gate 3 structural acceptance required the audit pipeline to produce valid, accepted output across 8 distinct real-shape business profiles. That bar was met: 8/8 profiles accepted, 16/16 eval criteria passed per run, on gpt-4o.
 
-## Audience to target
+**The remaining validation is live owner reaction, not more structural tests.**
 
-Aim for spread across these shapes — one each is ideal:
+For the current next step — sending audits to real owners and collecting feedback — see [`LIVE_OWNER_REACTION_PLAYBOOK.md`](LIVE_OWNER_REACTION_PLAYBOOK.md).
 
-| # | Shape | Examples |
+---
+
+## What "structural acceptance" meant
+
+| Criterion | Bar | Result |
 | --- | --- | --- |
-| 1 | Solo consultant / freelancer | branding, dev, marketing, ops |
-| 2 | Small services business (1–10 ppl) | dental, accounting, marketing agency |
-| 3 | E-commerce owner | Shopify shop, Etsy seller, small DTC |
-| 4 | SaaS founder, pre-product-market-fit | indie hacker, two-person founding team |
+| `EvalReport.accepted` | true on first run | 8/8 |
+| Deterministic rules passed | all 10 | 16/16 per run (10 rules + 6 rubric) |
+| No Pydantic ValidationErrors | 0 | 0 |
+| Model | gpt-4o | confirmed |
 
-You can swap one for a fifth shape if you have a better-fit contact.
+Structural acceptance does **not** mean the output is useful to a real owner. That is what live owner reactions measure.
 
-## Reach-out script (DM or email)
+## Sample fixtures committed
 
-> Hi — I'm building a small AI mentor product for solo / small-business owners. Trying to see whether it gives useful advice on real situations, not just made-up ones. Would you be willing to fill a 5–10 minute questionnaire? In return I'll send you a short report on where AI could realistically save you time and one experiment to try. No follow-up unless you want it.
+Eight sanitized profiles in `fixtures/intakes/samples/`:
 
-Attach: [`fixtures/intakes/INTAKE_TEMPLATE.md`](../fixtures/intakes/INTAKE_TEMPLATE.md) (or paste it inline).
-
-## Reference profiles already committed
-
-`fixtures/intakes/samples/` contains 7 curated real-shape profiles (dental clinic, solo consultant, home cleaning, fitness studio, DTC e-commerce, podcaster, messy wedding-photographer). Use them as templates for what a good intake looks like, or as inputs to test the audit pipeline before sending it to a real friend.
-
-```bash
-# Run a sample end-to-end:
-LLM_PROVIDER=openai uv run audit run \
-  --intake fixtures/intakes/samples/dental_clinic.json \
-  --output reports/dental_clinic.json \
-  --markdown reports/dental_clinic.md
-```
-
-The schema-regression test in `tests/test_sample_intakes.py` keeps these from drifting silently.
-
-## Per-intake workflow (for real friend data)
-
-1. **Receive the response** as plain text (or markdown).
-2. **Convert to AuditIntake JSON.** Save as `fixtures/intakes/real_<name>.json` — the `real_*.json` pattern is gitignored so live friend data never lands in git. (I'll do this for you if you paste the text — it's mechanical.)
-3. **Run the audit:**
-   ```bash
-   LLM_PROVIDER=openai \
-   uv run audit run --intake fixtures/intakes/real_<name>.json --output reports/<name>.json
-   ```
-   (Default model is `gpt-4o`. We tested `gpt-4o-mini` on the first 3 real intakes and it's not reliable enough — it occasionally drops required Pydantic fields and skips consistency rules like "high-judgment → keep_human ≥ 30%". gpt-4o handles both cleanly at ~10x the cost, which is still trivial.)
-4. **Inspect the output.** If `accepted=false`, look at which rules failed (the parser/diagnoser/leverage agents are the usual culprits) and decide if it's a prompt issue or a real-data quirk worth iterating on.
-5. **Share the bet with the owner.** Send the `*.md` produced by `audit run --markdown` — it's friend-shareable. The raw JSON is for your records.
-6. **Send the post-audit feedback questionnaire** — [`AUDIT_FEEDBACK_TEMPLATE.md`](AUDIT_FEEDBACK_TEMPLATE.md). 3-minute async form covering the Gate 3 §7 qualitative bars (specific? would-try? what's missing? usefulness 1–5? day-30 check-in?). Either copy-paste the markdown into the same DM, or schedule a 15-min call instead if they're more verbal.
-
-   See `fixtures/feedback/samples/` for 8 synthetic example responses (7 per-profile + 1 deliberately messy friend-style). Useful when iterating on prompts: re-read them before changing the audit's behaviour, since the patterns there ("make the bet smaller", "say what you're assuming", "ask the questions you skipped") repeat across most real respondents and shouldn't be tuned away by one outlier.
-
-## What to record per intake (use a spreadsheet)
-
-For each real intake — record these in a Google Sheet or text file as you go:
-
-| Column | Source |
+| File | Business shape |
 | --- | --- |
-| Owner name / handle | from you |
-| Business shape | manual tag (solo / services / e-com / SaaS / other) |
-| Intake completion time (minutes) | ask them at the end |
-| Audit walltime (seconds) | from the JSON output or `time` |
-| Audit cost (USD) | query `cost_usd` from `audit.db` agent_run rows |
-| `EvalReport.accepted` | from `eval_report` in the JSON |
-| Rules failed (if any) | from `eval_report.criteria` |
-| Bet target workflow | `thirty_day_bet.target_workflow_id` |
-| Bet feels specific? (1–5) | from the 15-min conversation |
-| Owner attempted bet in week 1? | follow-up at day 7 |
-| Re-ran within 30 days? | check for second `WorkflowRun` row |
-| Self-reported usefulness (1–5) | follow-up at day 30 |
+| `dental_clinic.json` | Small services (health) |
+| `solo_consultant.json` | Solo consultant / freelancer |
+| `home_cleaning.json` | Small services (home) |
+| `fitness_studio.json` | Small services (fitness) |
+| `ecommerce_brand.json` | DTC e-commerce |
+| `podcaster.json` | Creator / media |
+| `photographer.json` | Freelancer, deliberately messy intake |
+| `supermarket_owner.json` | Product retail, includes measurement baseline |
 
-Don't add analytics; a spreadsheet is enough for 5 intakes.
+A self-intake (freelance app developer) was tested and accepted but not committed as a sanitized fixture.
 
-## Acceptance bars (`PRODUCT_MVP.md` §7)
+## Intake format used
 
-V1 ships when, across the 5 real intakes:
-
-| Bar | Threshold |
-| --- | --- |
-| Intake completion time | <10 minutes for ≥ 4 of 5 |
-| Audit footprint | 1 WorkflowRun + 7–8 AgentRuns + 7 Artifacts, all 5 runs |
-| `EvalReport.accepted=true` first run | ≥ 3 of 5 |
-| Owner says bet is "specific and doable" | ≥ 4 of 5 (qualitative) |
-| Platform audit gaps (missing prompt_version, double-invoke errors, missing tenant) | 0 |
-
-## When to come back to me
-
-- **You have a response** → paste it into our chat; I'll convert to JSON, run the audit, and report.
-- **A rule fails on a real intake** → tell me which rule and which intake; I'll diagnose (prompt issue vs real-data quirk).
-- **An owner says the bet feels generic or wrong** → bring me the bet text + the owner's reaction; that's iteration signal.
-- **You finish the 5-intake batch** → we sit down with the tracker, count against the acceptance bars, and decide Gate 3 result (ship / iterate / pivot).
-
-## Pricing reality check
-
-At **gpt-4o** (recommended for Gate 3 reliability): ~$0.06/audit. Five real intakes + a few re-runs is ~$0.30–$0.50 total. Negligible.
-
-`gpt-4o-mini` is ~10x cheaper (~$0.005/audit) but on the first batch of real intakes we observed:
-- ~1 in 3 runs hits a Pydantic ValidationError (model drops a required field).
-- Consistency rules (`high_judgment → keep_human ≥ 30%`) violated despite explicit prompt instruction.
-- Refused-area coverage less reliable.
-
-Worth retrying on mini once gpt-4.1 family stabilises or when prompts are further tuned, but not for Gate 3 user-facing validation.
+At the time of Gate 3 testing, `AuditIntake` had no `measurement_context_text` field. The supermarket fixture (added post-Gate 3) is the first to include measurement baseline data. Future live-owner intakes should use the updated `INTAKE_TEMPLATE.md` which includes section 4 (measurement baseline).

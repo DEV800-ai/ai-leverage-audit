@@ -1,0 +1,17 @@
+{
+    "prior_workflow_run_id": "550e8400-e29b-41d4-a716-446655440000",
+    "prior_bet_title": "AI-drafted proposal-writing bet",
+
+    "outcome": "succeeded",
+    "success_metric_triggered": true,
+    "failure_metric_triggered": false,
+
+    "actual_weekly_hours_invested": 3.5,
+    "actual_setup_cost_usd": 30,
+
+    "what_worked_text": "The AI-drafted proposal template reduced my writing time from about 2.5 hours to under 45 minutes per proposal. I now send two proposals per week instead of one because the barrier is so much lower.",
+    "what_surprised_text": "Clients actually asked for more personalization than I expected — I have to hand-edit the tone section every time, which takes about 15 minutes. The structure is solid but the voice needs my touch.",
+    "what_owner_would_change_text": "I would add a short personalization checklist right after the template so I don't forget to customize the opening paragraph and the client-specific pain points section before sending.",
+
+    "intent": "continue"
+}

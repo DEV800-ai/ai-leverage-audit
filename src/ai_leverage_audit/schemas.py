@@ -9,6 +9,7 @@ the platform's Artifact primitive (ADR-004).
 from __future__ import annotations
 
 from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -36,6 +37,7 @@ class AuditIntake(BaseModel):
     weekly_time_to_invest_hours: int = Field(ge=1, le=40)
     monthly_budget_usd: int = Field(ge=0)
     things_owner_refuses_to_automate_text: str | None = None
+    measurement_context_text: str | None = None
 
 
 # ---------- Parsed Intake ----------
@@ -51,6 +53,23 @@ class WeeklyTask(BaseModel):
     current_tool: str | None = None
 
 
+class BaselineMeasurement(BaseModel):
+    """Owner-reported current-state numbers for one task or workflow.
+    All measurement fields are optional — the parser extracts what the owner provided."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    task_or_workflow_ref: str
+    volume_per_week: float | None = None
+    minutes_per_unit: float | None = None
+    mechanical_pct: int | None = Field(default=None, ge=0, le=100)
+    error_rate_1_in_x: float | None = None
+    minutes_to_fix_error: float | None = None
+    owner_review_pct_if_assisted: int | None = Field(default=None, ge=0, le=100)
+    owner_success_description: str | None = None
+    owner_stop_condition: str | None = None
+
+
 class ParsedIntake(BaseModel):
     """Structured representation of the AuditIntake, produced by the parser."""
 
@@ -64,6 +83,7 @@ class ParsedIntake(BaseModel):
     weekly_time_budget_hours: int = Field(ge=1, le=40)
     monthly_budget_usd: int = Field(ge=0)
     refused_automation_areas: list[str]
+    baseline_measurements: list[BaselineMeasurement] = Field(default_factory=list)
 
 
 # ---------- Workflow Map ----------
@@ -243,6 +263,8 @@ class PlaybookEntry(BaseModel):
         "not_yet_tested", "experimenting", "validated", "rejected"
     ]
     summary: str
+    cycle_introduced: int | None = None
+    last_outcome_summary: str | None = None
 
 
 class FirstPlaybook(BaseModel):
@@ -254,3 +276,29 @@ class FirstPlaybook(BaseModel):
     rules_for_human_involvement: list[str] = Field(min_length=3)
     open_questions: list[str]
     next_review_offset_days: int = Field(ge=1, default=30)
+    cycle_number: int = Field(default=1, ge=1)
+
+
+# ---------- Outcome Report ----------
+
+
+class OutcomeReport(BaseModel):
+    """Owner's structured report after completing a 30-day bet."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    prior_workflow_run_id: UUID
+    prior_bet_title: str
+
+    outcome: Literal["succeeded", "failed", "mixed", "abandoned"]
+    success_metric_triggered: bool
+    failure_metric_triggered: bool
+
+    actual_weekly_hours_invested: float = Field(ge=0)
+    actual_setup_cost_usd: int = Field(ge=0)
+
+    what_worked_text: str = Field(min_length=30)
+    what_surprised_text: str = Field(min_length=30)
+    what_owner_would_change_text: str = Field(min_length=30)
+
+    intent: Literal["continue", "pivot", "stop"]

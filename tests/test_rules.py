@@ -10,19 +10,27 @@ from __future__ import annotations
 import pytest
 from leverage_platform.eval import rule_eval
 
-from ai_leverage_audit.eval_config import LEVERAGE_AUDIT_RULES, AuditState
+from ai_leverage_audit.eval_config import (
+    CONTINUATION_AUDIT_RULES,
+    LEVERAGE_AUDIT_RULES,
+    AuditState,
+    ContinuationAuditState,
+)
 from ai_leverage_audit.schemas import (
     AuditIntake,
+    OutcomeReport,
     PlaybookEntry,
     Workflow,
 )
 from tests.conftest import (
     _bet_for,
     _leverage_analysis_for,
+    _outcome_report_for,
     _parsed_intake_for,
     _playbook_for,
     _risk_and_agency_map_for,
     _workflow_map_for,
+    _continuation_playbook_for,
 )
 
 
@@ -159,6 +167,77 @@ def test_refused_area_missing_from_keep_human_fails(state: AuditState) -> None:
         assert report.accepted is False
         fails = [c.name for c in report.criteria if not c.passed]
         assert "refused_areas_reflected_in_keep_human" in fails
+
+
+def test_rejected_workflow_not_retargeted_passes(
+    intake: AuditIntake,
+    outcome_report: OutcomeReport,
+) -> None:
+    """No rejected workflows in prior playbook → rule passes."""
+    parsed = _parsed_intake_for(intake)
+    workflow_map = _workflow_map_for(parsed)
+    leverage = _leverage_analysis_for(workflow_map)
+    bet = _bet_for(parsed, leverage)
+    risk_map = _risk_and_agency_map_for(parsed)
+    prior_playbook = _playbook_for(workflow_map, leverage, bet)
+    # Cycle 2 targets rank-2 workflow.
+    rank2_id = next(w.workflow_id for w in leverage.per_workflow if w.rank == 2)
+    bet2 = bet.model_copy(update={"target_workflow_id": rank2_id})
+    playbook2 = _continuation_playbook_for(
+        workflow_map, leverage, bet2, bet.target_workflow_id, "succeeded"
+    )
+    cont_state = ContinuationAuditState(
+        parsed_intake=parsed,
+        workflow_map=workflow_map,
+        leverage_analysis=leverage,
+        thirty_day_bet=bet2,
+        risk_and_agency_map=risk_map,
+        first_playbook=playbook2,
+        outcome_report=outcome_report,
+        prior_playbook=prior_playbook,
+    )
+    report = rule_eval(cont_state, CONTINUATION_AUDIT_RULES)
+    assert report.accepted is True
+
+
+def test_rejected_workflow_retargeted_fails(
+    intake: AuditIntake,
+    outcome_report: OutcomeReport,
+) -> None:
+    """Targeting a rejected workflow → rule fires."""
+    parsed = _parsed_intake_for(intake)
+    workflow_map = _workflow_map_for(parsed)
+    leverage = _leverage_analysis_for(workflow_map)
+    bet = _bet_for(parsed, leverage)
+    risk_map = _risk_and_agency_map_for(parsed)
+    prior_target = bet.target_workflow_id
+    # Mark prior target as rejected in prior playbook.
+    prior_playbook = _playbook_for(workflow_map, leverage, bet)
+    rejected_entries = [
+        e.model_copy(update={"current_status": "rejected"})
+        if e.workflow_id == prior_target
+        else e
+        for e in prior_playbook.workflow_entries
+    ]
+    prior_playbook = prior_playbook.model_copy(update={"workflow_entries": rejected_entries})
+    # Attempt to retarget the same (now rejected) workflow.
+    playbook2 = _continuation_playbook_for(
+        workflow_map, leverage, bet, prior_target, "failed"
+    )
+    cont_state = ContinuationAuditState(
+        parsed_intake=parsed,
+        workflow_map=workflow_map,
+        leverage_analysis=leverage,
+        thirty_day_bet=bet,  # still targets prior_target
+        risk_and_agency_map=risk_map,
+        first_playbook=playbook2,
+        outcome_report=outcome_report,
+        prior_playbook=prior_playbook,
+    )
+    report = rule_eval(cont_state, CONTINUATION_AUDIT_RULES)
+    assert report.accepted is False
+    fails = [c.name for c in report.criteria if not c.passed]
+    assert "rejected_workflow_not_retargeted" in fails
 
 
 def test_workflows_and_leverage_mismatch_fails(state: AuditState) -> None:

@@ -1,6 +1,7 @@
-# Cycle 2+ — Continuation Audits
+# Cycle 2+ — Continuation Audits (Stage 3: Evolve)
 
 **Status:** Design sketch, 2026-05-15. Not implemented. Re-read before building once at least one friend reaches day 30.
+**Product context:** This is the technical design for **Stage 3 — Evolve** of the three-stage product loop. See [`PRODUCT_LIFECYCLE.md`](PRODUCT_LIFECYCLE.md) for the full lifecycle model.
 **Companion:** `PRODUCT_VISION.md` §4 (the loop), `PRODUCT_ROADMAP.md` §4.3 (the V2 "continuous tracking" bet), `DESIGN.md` Tier 2 (`ReflectionEvent` — deferred).
 
 ## What this doc is for

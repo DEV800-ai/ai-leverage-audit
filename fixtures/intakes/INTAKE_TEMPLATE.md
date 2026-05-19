@@ -50,7 +50,42 @@ Nothing here gets stored anywhere public.
 
 ---
 
-## 4. Your goal
+## 4. Measurement baseline (optional but valuable)
+
+Pick the one or two tasks from section 2 that eat the most time. For each, answer what you can — estimates are fine.
+
+**Which task are you measuring?**
+>
+
+**How many do you process per week?** (invoices, orders, clients, requests, etc.)
+>
+
+**How long does one take you today, start to finish?** (minutes)
+>
+
+**Roughly what % of that time is mechanical** (copy-pasting, typing, searching) vs judgment (checking, deciding, approving)?
+> Mechanical: ___ % / Judgment: ___ %
+
+**How often do you catch a mistake?** (e.g. "1 in 20 invoices", "rarely", "almost every batch")
+>
+
+**If it happens, how long to fix one mistake?** (minutes)
+>
+
+**If AI handled the mechanical part, what % of the time would you still want to review the output yourself?**
+> Example: *"I'd check every single one"* = 100% / *"spot-check 1 in 5"* = 20%
+
+**What would "this worked" look like after 30 days?** (your words, not a metric)
+> Example: *"I stop dreading Monday morning invoicing"* / *"I can process in half the time"*
+
+**What would make you stop using it?**
+> Example: *"If I have to fix more than 2 mistakes per batch"* / *"If my staff don't trust the output"*
+
+*(Repeat the block above for a second task if you want.)*
+
+---
+
+## 5. Your goal
 
 **What's the primary thing you'd like AI to help you achieve?**
 > Example: *"Reclaim 5–8 hours per week of admin time so I can focus on higher-margin strategy work."*

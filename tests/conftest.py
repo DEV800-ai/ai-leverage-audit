@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 from collections.abc import Callable, Iterator
 from pathlib import Path
+from uuid import UUID
 
 import pytest
 from leverage_platform.llm import MockLLMProvider
@@ -28,6 +29,7 @@ from ai_leverage_audit.schemas import (
     FirstPlaybook,
     KeepHumanArea,
     LeverageAnalysis,
+    OutcomeReport,
     ParsedIntake,
     PlaybookEntry,
     RiskAndAgencyMap,
@@ -39,6 +41,7 @@ from ai_leverage_audit.schemas import (
 )
 
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures" / "intakes"
+OUTCOMES_DIR = Path(__file__).parent.parent / "fixtures" / "outcomes"
 
 
 # ---------- Factory functions producing rule-passing artifacts ----------
@@ -351,6 +354,85 @@ def _playbook_for(
     )
 
 
+def _outcome_report_for(prior_workflow_run_id: UUID) -> OutcomeReport:
+    """Synthetic cycle-1 outcome: proposal-writing succeeded, intent=continue."""
+    return OutcomeReport(
+        prior_workflow_run_id=prior_workflow_run_id,
+        prior_bet_title="AI-drafted proposal-writing bet",
+        outcome="succeeded",
+        success_metric_triggered=True,
+        failure_metric_triggered=False,
+        actual_weekly_hours_invested=3.5,
+        actual_setup_cost_usd=30,
+        what_worked_text=(
+            "The AI-drafted proposal template reduced writing time from 2.5h to under 45min."
+        ),
+        what_surprised_text=(
+            "Clients expected more personalization — the opening paragraph always needs hand-editing."
+        ),
+        what_owner_would_change_text=(
+            "Add a personalization checklist after the template to avoid forgetting key customizations."
+        ),
+        intent="continue",
+    )
+
+
+def _continuation_playbook_for(
+    workflow_map: WorkflowMap,
+    leverage: LeverageAnalysis,
+    bet: ThirtyDayBet,
+    prior_target: str,
+    prior_outcome: str,
+) -> FirstPlaybook:
+    """Cycle-2 playbook: prior_target status evolved from outcome, new bet is experimenting."""
+    status_map = {
+        "succeeded": "validated",
+        "failed": "rejected",
+        "mixed": "experimenting",
+        "abandoned": "not_yet_tested",
+    }
+    prior_resolved = status_map.get(prior_outcome, "not_yet_tested")
+    entries: list[PlaybookEntry] = []
+    for wf in workflow_map.workflows:
+        if wf.id == bet.target_workflow_id:
+            status = "experimenting"
+            last_summary = None
+        elif wf.id == prior_target:
+            status = prior_resolved
+            last_summary = f"Cycle 1 outcome: {prior_outcome}."
+        else:
+            status = "not_yet_tested"
+            last_summary = None
+        entries.append(
+            PlaybookEntry(
+                workflow_id=wf.id,
+                current_status=status,  # type: ignore[arg-type]
+                summary=f"Playbook entry for {wf.title}.",
+                cycle_introduced=1,
+                last_outcome_summary=last_summary,
+            )
+        )
+    return FirstPlaybook(
+        title="Branding Consultancy — AI Playbook v2",
+        business_summary=(
+            "A one-person branding consultancy. Proposal writing validated in cycle 1. "
+            "Cycle 2 targets lead qualification."
+        ),
+        workflow_entries=entries,
+        rules_for_human_involvement=[
+            "Owner sends all final client messages.",
+            "Owner reviews and approves every invoice before send.",
+            "If a client expresses concern about an AI-assisted output, pause and re-evaluate.",
+        ],
+        open_questions=[
+            "How often will the owner update this playbook?",
+            "What baseline metrics should be captured for re-eval at 90 days?",
+        ],
+        next_review_offset_days=30,
+        cycle_number=2,
+    )
+
+
 def _accepted_eval_report() -> EvalReport:
     return EvalReport(
         accepted=True,
@@ -396,6 +478,49 @@ def _make_factory(
     return factory
 
 
+def _make_continuation_factory(
+    intake: AuditIntake,
+    prior_target: str = "proposal-writing",
+    prior_outcome_str: str = "succeeded",
+) -> Callable[[type[BaseModel], str], BaseModel]:
+    """Factory for cycle-2 mock responses. Prior target is validated; new bet targets rank-2."""
+    parsed = _parsed_intake_for(intake)
+    workflow_map = _workflow_map_for(parsed)
+    leverage = _leverage_analysis_for(workflow_map)
+    # Cycle 2 targets rank-2 workflow (lead-qualification) since rank-1 was validated.
+    rank2_id = next(w.workflow_id for w in leverage.per_workflow if w.rank == 2)
+    bet = _bet_for(parsed, leverage)
+    bet = bet.model_copy(update={"target_workflow_id": rank2_id})
+    risk_map = _risk_and_agency_map_for(parsed)
+    prior_run_id = UUID("550e8400-e29b-41d4-a716-446655440000")
+    outcome = _outcome_report_for(prior_run_id)
+    playbook = _continuation_playbook_for(
+        workflow_map, leverage, bet, prior_target, prior_outcome_str
+    )
+    accepted = _accepted_eval_report()
+
+    def factory(schema: type[BaseModel], prompt: str) -> BaseModel:
+        if schema is ParsedIntake:
+            return parsed
+        if schema is WorkflowMap:
+            return workflow_map
+        if schema is LeverageAnalysis:
+            return leverage
+        if schema is ThirtyDayBet:
+            return bet
+        if schema is RiskAndAgencyMap:
+            return risk_map
+        if schema is FirstPlaybook:
+            return playbook
+        if schema is OutcomeReport:
+            return outcome
+        if schema is EvalReport:
+            return accepted
+        raise TypeError(f"No continuation factory branch for {schema.__name__}")
+
+    return factory
+
+
 # ---------- Pytest fixtures ----------
 
 
@@ -417,4 +542,16 @@ def intake() -> AuditIntake:
 @pytest.fixture
 def ctx(store: SQLiteStore, intake: AuditIntake) -> AgentContext:
     provider = MockLLMProvider(structured_factory=_make_factory(intake))
+    return AgentContext(tenant_id="default", provider=provider, store=store)
+
+
+@pytest.fixture
+def outcome_report() -> OutcomeReport:
+    path = OUTCOMES_DIR / "synthetic_consultant_cycle1_outcome.json"
+    return OutcomeReport.model_validate(json.loads(path.read_text()))
+
+
+@pytest.fixture
+def continuation_ctx(store: SQLiteStore, intake: AuditIntake) -> AgentContext:
+    provider = MockLLMProvider(structured_factory=_make_continuation_factory(intake))
     return AgentContext(tenant_id="default", provider=provider, store=store)

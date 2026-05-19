@@ -23,14 +23,17 @@ from leverage_platform.schemas import EvalReport
 from pydantic import BaseModel
 
 from ai_leverage_audit.eval_config import (
+    CONTINUATION_AUDIT_RULES,
     LEVERAGE_AUDIT_RUBRIC,
     LEVERAGE_AUDIT_RULES,
     AuditState,
+    ContinuationAuditState,
 )
 from ai_leverage_audit.prompts import (
     BET_DESIGNER_PROMPT,
     INTAKE_PARSER_PROMPT,
     LEVERAGE_ANALYST_PROMPT,
+    OUTCOME_PARSER_PROMPT,
     PLAYBOOK_BUILDER_PROMPT,
     RISK_MAPPER_PROMPT,
     WORKFLOW_DIAGNOSER_PROMPT,
@@ -39,6 +42,7 @@ from ai_leverage_audit.schemas import (
     AuditIntake,
     FirstPlaybook,
     LeverageAnalysis,
+    OutcomeReport,
     ParsedIntake,
     RiskAndAgencyMap,
     ThirtyDayBet,
@@ -105,13 +109,28 @@ async def workflow_diagnoser_agent(
     artifact_type="leverage_analysis",
 )
 async def leverage_analyst_agent(
-    ctx: AgentContext, parsed: ParsedIntake, workflow_map: WorkflowMap
+    ctx: AgentContext,
+    parsed: ParsedIntake,
+    workflow_map: WorkflowMap,
+    prior_playbook: FirstPlaybook | None = None,
 ) -> LeverageAnalysis:
+    prior_section = ""
+    if prior_playbook is not None:
+        rejected = [e.workflow_id for e in prior_playbook.workflow_entries if e.current_status == "rejected"]
+        validated = [e.workflow_id for e in prior_playbook.workflow_entries if e.current_status == "validated"]
+        parts = [f"PRIOR CYCLE CONTEXT (cycle {prior_playbook.cycle_number}):"]
+        if rejected:
+            parts.append(f"  Never rank these (rejected in a prior cycle): {rejected}")
+        if validated:
+            parts.append(f"  Down-rank these (already validated, deepening later is fine): {validated}")
+        parts.append("  Cite how prior outcomes inform this ranking.")
+        prior_section = "\n".join(parts)
     result = await ctx.invoke_llm(
         template=LEVERAGE_ANALYST_PROMPT,
         variables={
             "parsed_intake_json": _j(parsed),
             "workflow_map_json": _j(workflow_map),
+            "prior_playbook_section": prior_section,
         },
         schema=LeverageAnalysis,
         prompt_name="leverage_analyst_agent",
@@ -131,13 +150,29 @@ async def leverage_analyst_agent(
     artifact_type="thirty_day_bet",
 )
 async def bet_designer_agent(
-    ctx: AgentContext, parsed: ParsedIntake, leverage: LeverageAnalysis
+    ctx: AgentContext,
+    parsed: ParsedIntake,
+    leverage: LeverageAnalysis,
+    prior_outcome: OutcomeReport | None = None,
 ) -> ThirtyDayBet:
+    prior_section = ""
+    if prior_outcome is not None:
+        prior_section = (
+            f"CYCLE CONTINUITY RULE (mandatory):\n"
+            f"  Prior bet: {prior_outcome.prior_bet_title!r}\n"
+            f"  Outcome: {prior_outcome.outcome} (intent: {prior_outcome.intent})\n"
+            f"  What worked: {prior_outcome.what_worked_text}\n"
+            f"  What to change: {prior_outcome.what_owner_would_change_text}\n"
+            f"  The hypothesis MUST reference this prior outcome: "
+            f"'Last cycle we found X; this cycle we test Y because...'\n"
+            f"  Never target a workflow with status 'rejected' in the prior playbook."
+        )
     result = await ctx.invoke_llm(
         template=BET_DESIGNER_PROMPT,
         variables={
             "parsed_intake_json": _j(parsed),
             "leverage_analysis_json": _j(leverage),
+            "prior_outcome_section": prior_section,
         },
         schema=ThirtyDayBet,
         prompt_name="bet_designer_agent",
@@ -193,7 +228,25 @@ async def playbook_builder_agent(
     leverage: LeverageAnalysis,
     bet: ThirtyDayBet,
     risk_map: RiskAndAgencyMap,
+    prior_playbook: FirstPlaybook | None = None,
 ) -> FirstPlaybook:
+    prior_section = ""
+    if prior_playbook is not None:
+        next_cycle = prior_playbook.cycle_number + 1
+        prior_section = (
+            f"CONTINUATION PLAYBOOK RULES (mandatory):\n"
+            f"  This is cycle {next_cycle}. Set cycle_number = {next_cycle}.\n"
+            f"  UPDATE the prior playbook — do NOT create a new one from scratch.\n"
+            f"  Prior playbook (JSON): {_j(prior_playbook)}\n"
+            f"  Status evolution rules:\n"
+            f"    - The workflow targeted by this cycle's bet → set current_status\n"
+            f"      based on the outcome stored in prior_outcome_section.\n"
+            f"    - Workflows not touched this cycle → preserve prior status.\n"
+            f"    - New workflows (appear in workflow_map but not prior) → 'not_yet_tested'.\n"
+            f"  Fill cycle_introduced: use prior value if it exists, else {next_cycle}.\n"
+            f"  Fill last_outcome_summary ONLY for the workflow targeted this cycle\n"
+            f"  (1 short sentence summarising what happened to it)."
+        )
     result = await ctx.invoke_llm(
         template=PLAYBOOK_BUILDER_PROMPT,
         variables={
@@ -202,6 +255,7 @@ async def playbook_builder_agent(
             "leverage_analysis_json": _j(leverage),
             "thirty_day_bet_json": _j(bet),
             "risk_and_agency_map_json": _j(risk_map),
+            "prior_playbook_section": prior_section,
         },
         schema=FirstPlaybook,
         prompt_name="playbook_builder_agent",
@@ -227,3 +281,61 @@ async def critic_eval_agent(ctx: AgentContext, state: AuditState) -> EvalReport:
     if not rule_report.accepted:
         return rule_report
     return await llm_judge(ctx, artifact=state, rubric=LEVERAGE_AUDIT_RUBRIC)
+
+
+# ---------- 8. Outcome parser (cycle 2+) ----------
+
+
+@agent(
+    name="outcome_parser_agent",
+    schema=OutcomeReport,
+    prompt_name="outcome_parser_agent.v1",
+    artifact_type="outcome_report",
+)
+async def outcome_parser_agent(
+    ctx: AgentContext, prior_bet: ThirtyDayBet, outcome_text: str
+) -> OutcomeReport:
+    """Parse free-text owner reflection into a structured OutcomeReport."""
+    result = await ctx.invoke_llm(
+        template=OUTCOME_PARSER_PROMPT,
+        variables={
+            "prior_bet_json": _j(prior_bet),
+            "outcome_text": outcome_text,
+        },
+        schema=OutcomeReport,
+        prompt_name="outcome_parser_agent",
+        prompt_version="v1",
+        parameters=LLMParameters(temperature=0.0),
+    )
+    return result.value
+
+
+# ---------- 9. Continuation critic eval (cycle 2+, pure) ----------
+
+
+@agent(
+    name="continuation_critic_eval_agent",
+    schema=EvalReport,
+    prompt_name="continuation_critic_eval_agent.v1",
+    pure=True,
+    artifact_type="eval_report",
+)
+async def continuation_critic_eval_agent(
+    ctx: AgentContext, state: ContinuationAuditState
+) -> EvalReport:
+    """Two-stage eval for continuation audits: runs base rules + continuation rules."""
+    base_state = AuditState(
+        parsed_intake=state.parsed_intake,
+        workflow_map=state.workflow_map,
+        leverage_analysis=state.leverage_analysis,
+        thirty_day_bet=state.thirty_day_bet,
+        risk_and_agency_map=state.risk_and_agency_map,
+        first_playbook=state.first_playbook,
+    )
+    rule_report = rule_eval(base_state, LEVERAGE_AUDIT_RULES)
+    if not rule_report.accepted:
+        return rule_report
+    cont_report = rule_eval(state, CONTINUATION_AUDIT_RULES)
+    if not cont_report.accepted:
+        return cont_report
+    return await llm_judge(ctx, artifact=base_state, rubric=LEVERAGE_AUDIT_RUBRIC)

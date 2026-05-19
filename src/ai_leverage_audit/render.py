@@ -93,7 +93,8 @@ def render_audit_markdown(state: dict[str, object]) -> str:
     out: list[str] = []
 
     # Header
-    out.append(f"# {playbook.title}")
+    cycle_prefix = f"Cycle {playbook.cycle_number} — " if playbook.cycle_number > 1 else ""
+    out.append(f"# {cycle_prefix}{playbook.title}")
     out.append("")
     out.append(playbook.business_summary)
     out.append("")
@@ -229,7 +230,10 @@ def render_audit_markdown(state: dict[str, object]) -> str:
     for entry in playbook.workflow_entries:
         wf = _find_workflow(workflow_map, entry.workflow_id)
         title = wf.title if wf else entry.workflow_id
-        out.append(f"| {title} | `{entry.current_status}` | {entry.summary} |")
+        notes = entry.summary
+        if entry.last_outcome_summary:
+            notes = f"{notes} _{entry.last_outcome_summary}_"
+        out.append(f"| {title} | `{entry.current_status}` | {notes} |")
     out.append("")
 
     if playbook.open_questions:
