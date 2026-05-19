@@ -10,7 +10,7 @@ build/
 *.sqlite
 .env
 
-# Per-owner audit outputs. Reports themselves are sensitive (business info),
-# kept locally only.
-reports/
+# Per-owner audit outputs — real owner reports are sensitive, kept locally only.
+reports/real_*.json
+reports/real_*.md
 fixtures/intakes/real_*.json
