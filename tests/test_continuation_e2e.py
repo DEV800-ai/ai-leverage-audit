@@ -80,7 +80,10 @@ async def test_run_reflection_persists_artifacts(
     artifact_types = {r[0] for r in rows}
 
     # These 5 artifact types are always produced in run_reflection.
-    for expected in ("leverage_analysis", "thirty_day_bet", "risk_agency_map", "first_playbook", "eval_report"):
+    for expected in (
+        "leverage_analysis", "thirty_day_bet", "risk_agency_map",
+        "first_playbook", "eval_report",
+    ):
         assert expected in artifact_types, f"missing artifact: {expected}"
 
     # Intake parser and workflow diagnoser are skipped (reuse path).
@@ -130,7 +133,10 @@ async def test_run_reflection_prior_target_status_evolved(
 
     parsed, workflow_map, prior_playbook = _prior_artifacts(intake)
     prior_target = prior_playbook.workflow_entries[
-        next(i for i, e in enumerate(prior_playbook.workflow_entries) if e.current_status == "experimenting")
+        next(
+            i for i, e in enumerate(prior_playbook.workflow_entries)
+            if e.current_status == "experimenting"
+        )
     ].workflow_id
 
     workflow_id, report = await run_reflection(

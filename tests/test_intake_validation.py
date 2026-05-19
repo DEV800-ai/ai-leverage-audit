@@ -104,9 +104,12 @@ def test_parsed_intake_baseline_defaults_empty() -> None:
     pi = ParsedIntake(
         business_summary="test",
         weekly_tasks=[
-            {"title": "t1", "estimated_time_minutes_per_week": 60, "is_customer_facing": False, "is_error_sensitive": False},
-            {"title": "t2", "estimated_time_minutes_per_week": 30, "is_customer_facing": False, "is_error_sensitive": False},
-            {"title": "t3", "estimated_time_minutes_per_week": 20, "is_customer_facing": False, "is_error_sensitive": False},
+            {"title": "t1", "estimated_time_minutes_per_week": 60,
+             "is_customer_facing": False, "is_error_sensitive": False},
+            {"title": "t2", "estimated_time_minutes_per_week": 30,
+             "is_customer_facing": False, "is_error_sensitive": False},
+            {"title": "t3", "estimated_time_minutes_per_week": 20,
+             "is_customer_facing": False, "is_error_sensitive": False},
         ],
         tools_in_use=[],
         top_pain_points=[],

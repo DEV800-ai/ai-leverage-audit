@@ -116,13 +116,21 @@ async def leverage_analyst_agent(
 ) -> LeverageAnalysis:
     prior_section = ""
     if prior_playbook is not None:
-        rejected = [e.workflow_id for e in prior_playbook.workflow_entries if e.current_status == "rejected"]
-        validated = [e.workflow_id for e in prior_playbook.workflow_entries if e.current_status == "validated"]
+        rejected = [
+            e.workflow_id for e in prior_playbook.workflow_entries
+            if e.current_status == "rejected"
+        ]
+        validated = [
+            e.workflow_id for e in prior_playbook.workflow_entries
+            if e.current_status == "validated"
+        ]
         parts = [f"PRIOR CYCLE CONTEXT (cycle {prior_playbook.cycle_number}):"]
         if rejected:
             parts.append(f"  Never rank these (rejected in a prior cycle): {rejected}")
         if validated:
-            parts.append(f"  Down-rank these (already validated, deepening later is fine): {validated}")
+            parts.append(
+                f"  Down-rank these (already validated, deepening later is fine): {validated}"
+            )
         parts.append("  Cite how prior outcomes inform this ranking.")
         prior_section = "\n".join(parts)
     result = await ctx.invoke_llm(

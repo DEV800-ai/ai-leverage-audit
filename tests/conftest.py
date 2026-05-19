@@ -368,10 +368,12 @@ def _outcome_report_for(prior_workflow_run_id: UUID) -> OutcomeReport:
             "The AI-drafted proposal template reduced writing time from 2.5h to under 45min."
         ),
         what_surprised_text=(
-            "Clients expected more personalization — the opening paragraph always needs hand-editing."
+            "Clients expected more personalization — the opening paragraph"
+            " always needs hand-editing."
         ),
         what_owner_would_change_text=(
-            "Add a personalization checklist after the template to avoid forgetting key customizations."
+            "Add a personalization checklist after the template to avoid"
+            " forgetting key customizations."
         ),
         intent="continue",
     )

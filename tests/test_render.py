@@ -216,7 +216,9 @@ def test_renders_cycle_number_in_title_for_continuation(intake: AuditIntake) -> 
     bet = _bet_for(parsed, leverage)
     rank2_id = next(w.workflow_id for w in leverage.per_workflow if w.rank == 2)
     bet2 = bet.model_copy(update={"target_workflow_id": rank2_id})
-    playbook2 = _continuation_playbook_for(wfmap, leverage, bet2, bet.target_workflow_id, "succeeded")
+    playbook2 = _continuation_playbook_for(
+        wfmap, leverage, bet2, bet.target_workflow_id, "succeeded"
+    )
     state["first_playbook"] = playbook2
     md = render_audit_markdown(state)
     assert "Cycle 2 — " in md
@@ -231,7 +233,9 @@ def test_renders_last_outcome_summary_in_playbook(intake: AuditIntake) -> None:
     bet = _bet_for(parsed, leverage)
     rank2_id = next(w.workflow_id for w in leverage.per_workflow if w.rank == 2)
     bet2 = bet.model_copy(update={"target_workflow_id": rank2_id})
-    playbook2 = _continuation_playbook_for(wfmap, leverage, bet2, bet.target_workflow_id, "succeeded")
+    playbook2 = _continuation_playbook_for(
+        wfmap, leverage, bet2, bet.target_workflow_id, "succeeded"
+    )
     state["first_playbook"] = playbook2
     md = render_audit_markdown(state)
     assert "Cycle 1 outcome: succeeded." in md
