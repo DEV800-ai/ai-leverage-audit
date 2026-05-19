@@ -6,21 +6,18 @@ of test_workflow_e2e.py for the continuation audit path.
 
 from __future__ import annotations
 
-import pytest
 from leverage_platform.runtime import AgentContext
 from leverage_platform.storage import SQLiteStore
 
 from ai_leverage_audit.schemas import AuditIntake, OutcomeReport
 from ai_leverage_audit.workflow import run_reflection
 from tests.conftest import (
+    _bet_for,
     _leverage_analysis_for,
-    _outcome_report_for,
     _parsed_intake_for,
     _playbook_for,
     _workflow_map_for,
-    _bet_for,
 )
-from uuid import UUID
 
 
 def _prior_artifacts(intake: AuditIntake):
@@ -61,7 +58,6 @@ async def test_run_reflection_persists_artifacts(
     outcome_report: OutcomeReport,
 ) -> None:
     """Continuation audit persists 5-6 artifacts (no intake_parser or workflow_diagnoser)."""
-    import sqlite3
 
     parsed, workflow_map, prior_playbook = _prior_artifacts(intake)
 
@@ -99,7 +95,6 @@ async def test_run_reflection_cycle_number_incremented(
 ) -> None:
     """The returned playbook has cycle_number > 1."""
     import json
-    import sqlite3
 
     parsed, workflow_map, prior_playbook = _prior_artifacts(intake)
 
