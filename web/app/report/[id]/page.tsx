@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
-import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Target } from "lucide-react";
+import Link from "next/link";
 import { getAudit, type AuditResponse } from "@/lib/api";
 
 export default function ReportPage() {
@@ -69,6 +70,25 @@ export default function ReportPage() {
 
       {/* Report body */}
       <div className="max-w-3xl mx-auto px-6 py-10">
+        {/* Bet dashboard CTA */}
+        {data.state?.thirty_day_bet && (
+          <Link
+            href={`/bet/${id}`}
+            className="flex items-center justify-between bg-indigo-50 border border-indigo-200
+              rounded-xl px-5 py-4 mb-8 hover:bg-indigo-100 transition-colors group"
+          >
+            <div className="flex items-center gap-3">
+              <Target className="w-5 h-5 text-indigo-600 shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-indigo-900">
+                  {data.state.thirty_day_bet.title}
+                </p>
+                <p className="text-xs text-indigo-600 mt-0.5">Open 30-day bet tracker →</p>
+              </div>
+            </div>
+          </Link>
+        )}
+
         {!data.accepted && (
           <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
             <strong>Audit had concerns:</strong> {data.summary}
