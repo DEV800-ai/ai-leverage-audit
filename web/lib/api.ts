@@ -57,6 +57,20 @@ export interface FirstPlaybook {
   cycle_number: number;
 }
 
+export interface OutcomeReport {
+  prior_workflow_run_id: string;
+  prior_bet_title: string;
+  outcome: "succeeded" | "failed" | "mixed" | "abandoned";
+  success_metric_triggered: boolean;
+  failure_metric_triggered: boolean;
+  actual_weekly_hours_invested: number;
+  actual_setup_cost_usd: number;
+  what_worked_text: string;
+  what_surprised_text: string;
+  what_owner_would_change_text: string;
+  intent: "continue" | "pivot" | "stop";
+}
+
 export interface AuditState {
   workflow_run_id: string;
   thirty_day_bet: ThirtyDayBet;
@@ -99,15 +113,14 @@ export async function getAudit(id: string): Promise<AuditResponse> {
 }
 
 export async function runReflect(
-  outcomeReport: Record<string, unknown>,
-  priorWorkflowRunId: string,
+  outcomeReport: OutcomeReport,
 ): Promise<AuditResponse> {
   const res = await fetch(`${API_BASE}/api/reflect`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       outcome_report: outcomeReport,
-      prior_workflow_run_id: priorWorkflowRunId,
+      prior_workflow_run_id: outcomeReport.prior_workflow_run_id,
     }),
   });
   if (!res.ok) {
