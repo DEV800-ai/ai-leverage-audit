@@ -1,0 +1,39 @@
+{
+  "workflow_run_id": "7cb1d5d1-1891-42a2-8123-0a1249a9b80c",
+  "eval_report": {
+    "accepted": true,
+    "criteria": [
+      {
+        "name": "Is each workflow in WorkflowMap genuinely a recurring pattern, not a one-off task?",
+        "passed": true,
+        "reason": "Each workflow is described with a frequency and recurring pain points, indicating they are ongoing tasks."
+      },
+      {
+        "name": "Are LeverageAnalysis.rationale entries specific to the owner's actual business, not generic advice?",
+        "passed": true,
+        "reason": "The rationales are tailored to the specific workflows and challenges faced by the AI developer."
+      },
+      {
+        "name": "Does ThirtyDayBet.first_48h_actions realistically fit in 48 hours given the owner's stated weekly time budget?",
+        "passed": true,
+        "reason": "The actions are concise and feasible within the 48-hour timeframe, considering the weekly time budget."
+      },
+      {
+        "name": "Is ThirtyDayBet.failure_metric a genuine off-ramp (observable, decisive) rather than a face-saver?",
+        "passed": true,
+        "reason": "The failure metric is clear and measurable, focusing on time reduction in specific tasks."
+      },
+      {
+        "name": "Do the RiskAndAgencyMap.keep_human_areas reflect actual customer-trust / regulated / judgment-heavy work, rather than just things the owner finds tedious?",
+        "passed": true,
+        "reason": "The areas retained for human involvement are critical for maintaining quality and trust."
+      },
+      {
+        "name": "Does FirstPlaybook produce a compounding asset (knowledge, validated workflow, customer relationship) rather than just a saved-time list?",
+        "passed": true,
+        "reason": "The playbook aims to streamline operations and enhance client relationships, creating long-term value."
+      }
+    ],
+    "summary": "The artifact meets all rubric criteria, demonstrating a well-structured and specific approach to leveraging AI in business operations."
+  }
+}

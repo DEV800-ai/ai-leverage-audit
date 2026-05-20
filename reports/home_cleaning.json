@@ -1,0 +1,39 @@
+{
+  "workflow_run_id": "389631a7-0cc9-4ae3-9934-3fddb15f20b4",
+  "eval_report": {
+    "accepted": true,
+    "criteria": [
+      {
+        "name": "Is each workflow in WorkflowMap genuinely a recurring pattern, not a one-off task?",
+        "passed": true,
+        "reason": "Each workflow is described with a frequency and recurring tasks, indicating they are not one-off."
+      },
+      {
+        "name": "Are LeverageAnalysis.rationale entries specific to the owner's actual business, not generic advice?",
+        "passed": true,
+        "reason": "The rationales are tailored to the specific challenges and operations of the home cleaning service."
+      },
+      {
+        "name": "Does ThirtyDayBet.first_48h_actions realistically fit in 48 hours given the owner's stated weekly time budget?",
+        "passed": true,
+        "reason": "The actions are concise and fit within the 48-hour timeframe, considering the weekly time budget."
+      },
+      {
+        "name": "Is ThirtyDayBet.failure_metric a genuine off-ramp (observable, decisive) rather than a face-saver?",
+        "passed": true,
+        "reason": "The failure metric is clear and measurable, focusing on response time and customer complaints."
+      },
+      {
+        "name": "Do the RiskAndAgencyMap.keep_human_areas reflect actual customer-trust / regulated / judgment-heavy work, rather than just things the owner finds tedious?",
+        "passed": true,
+        "reason": "The areas kept human involve high judgment and customer trust, such as handling complaints and financial decisions."
+      },
+      {
+        "name": "Does FirstPlaybook produce a compounding asset (knowledge, validated workflow, customer relationship) rather than just a saved-time list?",
+        "passed": true,
+        "reason": "The playbook aims to improve response times and streamline processes, enhancing customer relationships and operational efficiency."
+      }
+    ],
+    "summary": "The artifact meets all rubric criteria, demonstrating a well-structured and specific approach to automation in the business context."
+  }
+}
