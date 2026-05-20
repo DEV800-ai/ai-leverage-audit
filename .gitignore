@@ -10,6 +10,11 @@ build/
 *.sqlite
 .env
 
+# Next.js
+web/.next/
+web/node_modules/
+web/.env.local
+
 # Per-owner audit outputs — real owner reports are sensitive, kept locally only.
 reports/real_*.json
 reports/real_*.md

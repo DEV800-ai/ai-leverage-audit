@@ -57,3 +57,10 @@ testpaths = ["tests"]
 addopts = "-ra -q"
 pythonpath = ["src"]
 asyncio_mode = "auto"
+
+[dependency-groups]
+dev = [
+    "fastapi>=0.136.1",
+    "python-multipart>=0.0.29",
+    "uvicorn[standard]>=0.47.0",
+]
