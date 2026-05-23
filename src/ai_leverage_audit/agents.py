@@ -31,6 +31,9 @@ from ai_leverage_audit.eval_config import (
 )
 from ai_leverage_audit.prompts import (
     BET_DESIGNER_PROMPT,
+    HEALTHCARE_BET_SECTION,
+    HEALTHCARE_LEVERAGE_SECTION,
+    HEALTHCARE_RISK_SECTION,
     INTAKE_PARSER_PROMPT,
     LEVERAGE_ANALYST_PROMPT,
     OUTCOME_PARSER_PROMPT,
@@ -48,6 +51,25 @@ from ai_leverage_audit.schemas import (
     ThirtyDayBet,
     WorkflowMap,
 )
+
+_HEALTHCARE_KEYWORDS = frozenset({
+    "dental", "dentist", "dentistry", "clinic", "clinics", "medical",
+    "patient", "patients", "healthcare", "health care", "veterinary",
+    "veterinarian", "vet ", "therapy", "therapist", "hospital", "pharmacy",
+    "pharmacist", "physician", "doctor", "nurse", "treatment", "medication",
+    "medications", "hipaa", "clinical", "practitioner", "chiropractor",
+    "optometrist", "physiotherapy", "physiotherapist",
+})
+
+
+def _is_healthcare(parsed: ParsedIntake) -> bool:
+    text = " ".join([
+        parsed.business_summary,
+        parsed.primary_goal,
+        " ".join(parsed.top_pain_points),
+        " ".join(t.title for t in parsed.weekly_tasks),
+    ]).lower()
+    return any(kw in text for kw in _HEALTHCARE_KEYWORDS)
 
 
 def _j(model: BaseModel) -> str:
@@ -139,6 +161,7 @@ async def leverage_analyst_agent(
             "parsed_intake_json": _j(parsed),
             "workflow_map_json": _j(workflow_map),
             "prior_playbook_section": prior_section,
+            "healthcare_section": HEALTHCARE_LEVERAGE_SECTION if _is_healthcare(parsed) else "",
         },
         schema=LeverageAnalysis,
         prompt_name="leverage_analyst_agent",
@@ -181,6 +204,7 @@ async def bet_designer_agent(
             "parsed_intake_json": _j(parsed),
             "leverage_analysis_json": _j(leverage),
             "prior_outcome_section": prior_section,
+            "healthcare_section": HEALTHCARE_BET_SECTION if _is_healthcare(parsed) else "",
         },
         schema=ThirtyDayBet,
         prompt_name="bet_designer_agent",
@@ -204,13 +228,24 @@ async def risk_mapper_agent(
     parsed: ParsedIntake,
     workflow_map: WorkflowMap,
     leverage: LeverageAnalysis,
+    bet: ThirtyDayBet | None = None,
 ) -> RiskAndAgencyMap:
+    healthcare_section = ""
+    if _is_healthcare(parsed):
+        bet_context = (
+            f"\nbet_context: The selected 30-day bet targets "
+            f'"{bet.title}" ({bet.target_workflow_id}).'
+            if bet is not None
+            else ""
+        )
+        healthcare_section = HEALTHCARE_RISK_SECTION + bet_context
     result = await ctx.invoke_llm(
         template=RISK_MAPPER_PROMPT,
         variables={
             "parsed_intake_json": _j(parsed),
             "workflow_map_json": _j(workflow_map),
             "leverage_analysis_json": _j(leverage),
+            "healthcare_section": healthcare_section,
         },
         schema=RiskAndAgencyMap,
         prompt_name="risk_mapper_agent",

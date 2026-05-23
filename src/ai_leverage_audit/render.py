@@ -85,6 +85,26 @@ def load_state_from_db(
     return state
 
 
+_HEALTHCARE_KEYWORDS = frozenset({
+    "dental", "dentist", "dentistry", "clinic", "clinics", "medical",
+    "patient", "patients", "healthcare", "health care", "veterinary",
+    "veterinarian", "vet ", "therapy", "therapist", "hospital", "pharmacy",
+    "pharmacist", "physician", "doctor", "nurse", "treatment", "medication",
+    "medications", "hipaa", "clinical", "practitioner", "chiropractor",
+    "optometrist", "physiotherapy", "physiotherapist",
+})
+
+
+def _is_healthcare(parsed: ParsedIntake) -> bool:
+    text = " ".join([
+        parsed.business_summary,
+        parsed.primary_goal,
+        " ".join(parsed.top_pain_points),
+        " ".join(t.title for t in parsed.weekly_tasks),
+    ]).lower()
+    return any(kw in text for kw in _HEALTHCARE_KEYWORDS)
+
+
 def render_audit_markdown(state: dict[str, object]) -> str:
     """Return a single markdown document covering the whole Audit."""
     parsed: ParsedIntake = state["parsed_intake"]  # type: ignore[assignment]
@@ -107,11 +127,13 @@ def render_audit_markdown(state: dict[str, object]) -> str:
     out.append("")
 
     # Status banner
-    status_label = (
-        "✅ Accepted by the audit"
-        if eval_report.accepted
-        else "⚠️ Audit had concerns — see end of doc"
-    )
+    if eval_report.accepted:
+        if _is_healthcare(parsed):
+            status_label = "✅ Accepted: low-risk admin-only pilot"
+        else:
+            status_label = "✅ Accepted by the audit"
+    else:
+        status_label = "⚠️ Audit had concerns — see end of doc"
     out.append(f"_{status_label}_")
     out.append("")
 

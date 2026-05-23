@@ -41,7 +41,7 @@ async def run_audit(
         workflow_map = await workflow_diagnoser_agent(ctx, parsed)
         leverage = await leverage_analyst_agent(ctx, parsed, workflow_map)
         bet = await bet_designer_agent(ctx, parsed, leverage)
-        risk_map = await risk_mapper_agent(ctx, parsed, workflow_map, leverage)
+        risk_map = await risk_mapper_agent(ctx, parsed, workflow_map, leverage, bet)
         playbook = await playbook_builder_agent(
             ctx, parsed, workflow_map, leverage, bet, risk_map
         )
@@ -87,7 +87,7 @@ async def run_reflection(
         bet = await bet_designer_agent(
             ctx, parsed, leverage, prior_outcome=outcome_report
         )
-        risk_map = await risk_mapper_agent(ctx, parsed, workflow_map, leverage)
+        risk_map = await risk_mapper_agent(ctx, parsed, workflow_map, leverage, bet)
         playbook = await playbook_builder_agent(
             ctx, parsed, workflow_map, leverage, bet, risk_map,
             prior_playbook=prior_playbook,

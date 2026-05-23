@@ -275,4 +275,22 @@ LEVERAGE_AUDIT_RUBRIC: list[str] = [
         "Does FirstPlaybook produce a compounding asset (knowledge, validated "
         "workflow, customer relationship) rather than just a saved-time list?"
     ),
+    (
+        "HEALTHCARE CHECK (skip if not a healthcare/clinical business): "
+        "For dental, medical, veterinary, therapy, or any health-related business — "
+        "(a) does every patient-facing workflow have automate_pct <= 20, "
+        "assist_pct >= automate_pct, and human_judgment_needed = 'high'? "
+        "(b) does the 30-day bet avoid auto-scheduling without human confirmation, "
+        "auto-ordering medication/supplies, and automated patient replies without "
+        "human review? "
+        "(c) do weekly_review_questions match the selected bet's sub-activity "
+        "rather than unrelated workflows?"
+    ),
+    (
+        "HEALTHCARE SAFETY METRICS CHECK (skip if not healthcare): "
+        "Does ThirtyDayBet.success_metric include an explicit human-review "
+        "requirement (e.g. '100%% of drafts reviewed before sending') and does "
+        "failure_metric include an immediate stop condition for any automated "
+        "message reaching a patient without human review?"
+    ),
 ]

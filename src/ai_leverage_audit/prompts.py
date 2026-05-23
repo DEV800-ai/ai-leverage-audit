@@ -142,6 +142,7 @@ Mix fields — apply these hard constraints in order:
 Output also overall_top_three_ids: the three workflow_ids with ranks 1, 2, 3.
 
 {prior_playbook_section}
+{healthcare_section}
 Be specific to the owner. Do not pad. JSON only.
 """
 
@@ -221,6 +222,7 @@ Then complete:
 The bet must be specific to the owner's tools, role, and primary_goal.
 
 {prior_outcome_section}
+{healthcare_section}
 """
 
 
@@ -253,6 +255,7 @@ Produce a `RiskAndAgencyMap`:
   week. At least one references each keep_human_area thematically.
 - compliance_or_legal_flags: may be an empty list.
 
+{healthcare_section}
 JSON only.
 """
 
@@ -313,6 +316,78 @@ JSON only.
 {prior_playbook_section}
 """
 
+
+# ── Healthcare context sections ─────────────────────────────────────────────
+# Injected into the relevant prompts when _is_healthcare() is True.
+# All three sections are opt-in: the default variable value is "" (empty).
+
+HEALTHCARE_LEVERAGE_SECTION = """\
+HEALTHCARE CONTEXT — apply before scoring, these override default rules:
+- Patient-facing or clinical workflows: human_judgment_needed = "high",
+  keep_human_pct >= 40, automate_pct <= 20. Use "draft" or "triage"
+  language in automate_examples — never "auto-reply" or "auto-send to patient".
+- Appointment management: automate_pct <= 25. Every automate example must
+  include "requires staff confirmation". Never describe auto-booking.
+- Medication or medical-inventory workflows: automate_pct <= 15,
+  human_judgment_needed = "high". Never suggest auto-ordering.
+- Assist-first default: for every clinical or patient-facing workflow,
+  assist_pct >= automate_pct.
+- Add "assist-first approach due to healthcare context" to each rationale
+  that would otherwise lean toward full automation.
+"""
+
+HEALTHCARE_BET_SECTION = """\
+HEALTHCARE BET CONSTRAINTS — mandatory:
+1. TRIAGE + DRAFT, not auto-reply: every patient-facing action in this bet
+   must be reviewed by a human before it reaches any patient. Use language
+   like "draft for staff review", "template staff selects from", or
+   "route to reception" — not "auto-send" or "auto-reply".
+2. No auto-scheduling: if the bet touches appointments at all, a human
+   confirmation step is required before any booking is confirmed or changed.
+3. No auto-ordering: do not recommend automatic ordering of medication,
+   supplies, or any medical inventory.
+4. Safety metrics: success_metric MUST include "100% of drafted messages
+   reviewed by staff before sending" or equivalent. failure_metric MUST
+   include "any automated message reaches a patient without human review
+   = immediate stop".
+5. PROGRESSION RULE: if the owner's primary_goal involves scheduling or
+   clinical follow-ups, choose a lower-risk sub-activity for this bet
+   (e.g. WhatsApp/intake triage). Add this sentence to the hypothesis:
+   "Scheduling and treatment follow-ups are higher-risk workflows — this
+   first 30-day bet starts with lower-risk non-medical intake triage to
+   build confidence before advancing."
+6. Implementation: expected_asset_created should reference an approved
+   template library with human-gated sending — not EHR integration or
+   appointment system APIs in cycle 1.
+"""
+
+HEALTHCARE_RISK_SECTION = """\
+HEALTHCARE RISK CONSTRAINTS — mandatory:
+1. keep_human_areas MUST include at minimum:
+   - area: "Medical advice, symptom or treatment questions", severity: "high",
+     reason: "Only licensed clinicians can advise on clinical matters"
+   - area: "Patient health information (PHI) and HIPAA compliance",
+     severity: "high", reason: "Patient data requires HIPAA-compliant handling"
+2. compliance_or_legal_flags MUST include:
+   - "HIPAA: no patient health information (PHI) in automated message templates"
+   - "BAA required before sharing any patient data with an AI tool or vendor"
+3. weekly_review_questions MUST be specific to the 30-day bet's sub-activity
+   (see bet_context below). For a WhatsApp triage or patient-intake bet, use:
+   - "How many inbound WhatsApp inquiries arrived this week?"
+   - "How many were handled using approved templates (no staff edit needed)?"
+   - "How many required escalation to a staff member?"
+   - "Did any automated draft touch medical content (symptoms, treatment,
+     medication)?"
+   - "Did any patient complain about tone or content of a message?"
+   - "How much staff time was saved vs. your Week 1 baseline?"
+   Do NOT ask about EHR records, billing, or inventory unless that is what
+   the 30-day bet targets.
+4. automation_risks MUST include:
+   - automation: "AI-drafted patient messages",
+     what_could_break: "Template used for a medical question it was not designed
+     for", mitigation: "All drafts reviewed by staff; medical queries auto-flag
+     for escalation and are never sent automatically"
+"""
 
 OUTCOME_PARSER_PROMPT = """\
 You are converting a small business owner's free-text outcome report into

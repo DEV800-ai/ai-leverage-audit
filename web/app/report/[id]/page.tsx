@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Target } from "lucide-react";
 import Link from "next/link";
 import { getAudit, type AuditResponse } from "@/lib/api";
@@ -100,7 +101,7 @@ export default function ReportPage() {
           prose-code:text-indigo-600 prose-code:bg-indigo-50 prose-code:px-1
           prose-code:rounded prose-code:before:content-none prose-code:after:content-none
           max-w-none">
-          <ReactMarkdown>{data.markdown}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{data.markdown}</ReactMarkdown>
         </article>
 
         {/* Run ID */}
