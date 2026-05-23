@@ -91,6 +91,15 @@ export default function IntakePage() {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
+  function canAdvance(): boolean {
+    const ok = (v: string, min = 1) => v.trim().length >= min;
+    if (step === 0) return ok(form.business_type) && ok(form.current_role);
+    if (step === 1) return ok(form.weekly_tasks_text, 30) && ok(form.top_time_sinks_text, 30);
+    if (step === 2) return ok(form.current_tools_text, 30) && ok(form.error_sensitive_areas_text, 30) && ok(form.customer_facing_areas_text, 30);
+    if (step === 3) return ok(form.primary_goal_text, 30) && ok(form.things_owner_refuses_to_automate_text, 30);
+    return true;
+  }
+
   async function submit() {
     setSubmitting(true);
     setError(null);
@@ -134,8 +143,8 @@ export default function IntakePage() {
       <Field label="Describe your typical weekly tasks" hint="List the recurring things you or your team do each week. Include rough time spent if you know it.">
         <textarea rows={6} className={textareaCls} value={form.weekly_tasks_text} onChange={(e) => set("weekly_tasks_text", e.target.value)} placeholder="Respond to customer emails (1h/day), create Instagram content (2h/week), process supplier invoices (3 invoices × 35min)..." />
       </Field>
-      <Field label="What are your biggest time sinks?" hint="Where does time disappear that you wish it didn't?">
-        <textarea rows={4} className={textareaCls} value={form.top_time_sinks_text} onChange={(e) => set("top_time_sinks_text", e.target.value)} placeholder="Answering the same customer questions repeatedly. Manual invoice entry — typing every line item." />
+      <Field label="What are your biggest time sinks?" hint="Be specific — describe the actual pain, not just a category. e.g. 'Answering the same 5 shipping questions every day' not just 'emails'.">
+        <textarea rows={4} className={textareaCls} value={form.top_time_sinks_text} onChange={(e) => set("top_time_sinks_text", e.target.value)} placeholder="Answering the same shipping and return questions every day. Manual data entry for every supplier invoice — typing each line item from a PDF." />
       </Field>
     </div>,
 
@@ -144,11 +153,11 @@ export default function IntakePage() {
       <Field label="What tools do you currently use?">
         <textarea rows={3} className={textareaCls} value={form.current_tools_text} onChange={(e) => set("current_tools_text", e.target.value)} placeholder="Shopify, Gmail, Instagram, Canva, Google Sheets, WhatsApp for suppliers..." />
       </Field>
-      <Field label="Where would an error be most painful?" hint="What workflows touch customers, money, or data that's hard to reverse?">
-        <textarea rows={3} className={textareaCls} value={form.error_sensitive_areas_text} onChange={(e) => set("error_sensitive_areas_text", e.target.value)} placeholder="Customer refunds, supplier purchase orders, pricing changes." />
+      <Field label="Where would an error be most painful?" hint="Describe the workflows that touch customers, money, or data that's hard to reverse. What would make you lose sleep?">
+        <textarea rows={3} className={textareaCls} value={form.error_sensitive_areas_text} onChange={(e) => set("error_sensitive_areas_text", e.target.value)} placeholder="Customer refund decisions, supplier purchase orders, and any pricing changes — a mistake here costs real money or damages trust." />
       </Field>
-      <Field label="Which parts of your work are customer-facing?">
-        <textarea rows={3} className={textareaCls} value={form.customer_facing_areas_text} onChange={(e) => set("customer_facing_areas_text", e.target.value)} placeholder="All customer support emails, order confirmations, Instagram posts." />
+      <Field label="Which parts of your work are customer-facing?" hint="Where does a bad output directly affect what a customer sees or experiences?">
+        <textarea rows={3} className={textareaCls} value={form.customer_facing_areas_text} onChange={(e) => set("customer_facing_areas_text", e.target.value)} placeholder="All customer support replies, order confirmation emails, and anything posted on Instagram or the website." />
       </Field>
     </div>,
 
@@ -183,6 +192,8 @@ export default function IntakePage() {
         ["Weekly tasks", form.weekly_tasks_text],
         ["Time sinks", form.top_time_sinks_text],
         ["Tools", form.current_tools_text],
+        ["Error-sensitive areas", form.error_sensitive_areas_text],
+        ["Customer-facing areas", form.customer_facing_areas_text],
         ["Primary goal", form.primary_goal_text],
         ["Budget", `${form.weekly_time_to_invest_hours}h/wk · $${form.monthly_budget_usd}/mo`],
         ["Won't automate", form.things_owner_refuses_to_automate_text],
@@ -263,8 +274,10 @@ export default function IntakePage() {
           ) : (
             <button
               onClick={() => setStep((s) => s + 1)}
+              disabled={!canAdvance()}
               className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-2.5
-                rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors"
+                rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors
+                disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Next <ArrowRight className="w-4 h-4" />
             </button>

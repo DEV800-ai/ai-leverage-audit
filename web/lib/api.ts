@@ -101,7 +101,15 @@ export async function runAudit(intake: Record<string, unknown>): Promise<AuditRe
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail ?? "Audit failed");
+    const detail = err.detail;
+    if (Array.isArray(detail)) {
+      const msgs = detail.map((e: { loc?: string[]; msg?: string }) => {
+        const field = e.loc ? e.loc[e.loc.length - 1] : "field";
+        return `${field}: ${e.msg}`;
+      });
+      throw new Error(msgs.join(" · "));
+    }
+    throw new Error(typeof detail === "string" ? detail : "Audit failed");
   }
   return res.json();
 }
