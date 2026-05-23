@@ -168,6 +168,27 @@ export default function IntakePage() {
   async function submit() {
     setSubmitting(true);
     setError(null);
+
+    const MIN = 30;
+    const short = (v: string) => v.trim().length < MIN;
+    const naOk = (v: string, na: string) => v === na || !short(v);
+    const problems: string[] = [];
+    if (short(form.weekly_tasks_text)) problems.push("Weekly tasks — add more detail");
+    if (short(form.top_time_sinks_text)) problems.push("Time sinks — add more detail");
+    if (short(form.current_tools_text)) problems.push("Tools — add more detail");
+    if (!naOk(form.error_sensitive_areas_text, NA_ERROR_SENSITIVE))
+      problems.push("Error-sensitive areas — add more detail or mark N/A");
+    if (!naOk(form.customer_facing_areas_text, NA_CUSTOMER_FACING))
+      problems.push("Customer-facing areas — add more detail or mark N/A");
+    if (short(form.primary_goal_text)) problems.push("Primary goal — add more detail");
+    if (!naOk(form.things_owner_refuses_to_automate_text, NA_REFUSES_AUTOMATE))
+      problems.push("Won't automate — add more detail or mark N/A");
+    if (problems.length > 0) {
+      setError("Please complete: " + problems.join(" · "));
+      setSubmitting(false);
+      return;
+    }
+
     try {
       const intake = {
         ...form,
