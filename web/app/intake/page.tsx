@@ -73,6 +73,62 @@ function Field({
   );
 }
 
+function NAField({
+  label,
+  hint,
+  naValue,
+  value,
+  onChange,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  naValue: string;
+  value: string;
+  onChange: (v: string) => void;
+  children: React.ReactNode;
+}) {
+  const isNA = value === naValue;
+  return (
+    <div>
+      <div className="flex items-baseline justify-between mb-1">
+        <Label>{label}</Label>
+        {!isNA && (
+          <button
+            type="button"
+            onClick={() => onChange(naValue)}
+            className="text-xs text-gray-400 hover:text-indigo-600 transition-colors ml-2 shrink-0"
+          >
+            N/A
+          </button>
+        )}
+      </div>
+      {isNA ? (
+        <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+          <span className="text-sm text-gray-400 italic">Not applicable</span>
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="text-xs text-indigo-600 hover:underline ml-4"
+          >
+            Clear
+          </button>
+        </div>
+      ) : (
+        children
+      )}
+      {hint && !isNA && <Hint>{hint}</Hint>}
+    </div>
+  );
+}
+
+const NA_ERROR_SENSITIVE =
+  "Not applicable — this business has no error-sensitive or financially irreversible workflows.";
+const NA_CUSTOMER_FACING =
+  "Not applicable — this business has no direct customer-facing outputs or communications.";
+const NA_REFUSES_AUTOMATE =
+  "Not applicable — no specific restrictions; open to automating any eligible workflow.";
+
 const inputCls =
   "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 " +
   "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent " +
@@ -95,8 +151,17 @@ export default function IntakePage() {
     const ok = (v: string, min = 1) => v.trim().length >= min;
     if (step === 0) return ok(form.business_type) && ok(form.current_role);
     if (step === 1) return ok(form.weekly_tasks_text, 30) && ok(form.top_time_sinks_text, 30);
-    if (step === 2) return ok(form.current_tools_text, 30) && ok(form.error_sensitive_areas_text, 30) && ok(form.customer_facing_areas_text, 30);
-    if (step === 3) return ok(form.primary_goal_text, 30) && ok(form.things_owner_refuses_to_automate_text, 30);
+    if (step === 2)
+      return (
+        ok(form.current_tools_text, 30) &&
+        (form.error_sensitive_areas_text === NA_ERROR_SENSITIVE || ok(form.error_sensitive_areas_text, 30)) &&
+        (form.customer_facing_areas_text === NA_CUSTOMER_FACING || ok(form.customer_facing_areas_text, 30))
+      );
+    if (step === 3)
+      return (
+        ok(form.primary_goal_text, 30) &&
+        (form.things_owner_refuses_to_automate_text === NA_REFUSES_AUTOMATE || ok(form.things_owner_refuses_to_automate_text, 30))
+      );
     return true;
   }
 
@@ -153,12 +218,24 @@ export default function IntakePage() {
       <Field label="What tools do you currently use?">
         <textarea rows={3} className={textareaCls} value={form.current_tools_text} onChange={(e) => set("current_tools_text", e.target.value)} placeholder="Shopify, Gmail, Instagram, Canva, Google Sheets, WhatsApp for suppliers..." />
       </Field>
-      <Field label="Where would an error be most painful?" hint="Describe the workflows that touch customers, money, or data that's hard to reverse. What would make you lose sleep?">
+      <NAField
+        label="Where would an error be most painful?"
+        hint="Describe the workflows that touch customers, money, or data that's hard to reverse. What would make you lose sleep?"
+        naValue={NA_ERROR_SENSITIVE}
+        value={form.error_sensitive_areas_text}
+        onChange={(v) => set("error_sensitive_areas_text", v)}
+      >
         <textarea rows={3} className={textareaCls} value={form.error_sensitive_areas_text} onChange={(e) => set("error_sensitive_areas_text", e.target.value)} placeholder="Customer refund decisions, supplier purchase orders, and any pricing changes — a mistake here costs real money or damages trust." />
-      </Field>
-      <Field label="Which parts of your work are customer-facing?" hint="Where does a bad output directly affect what a customer sees or experiences?">
+      </NAField>
+      <NAField
+        label="Which parts of your work are customer-facing?"
+        hint="Where does a bad output directly affect what a customer sees or experiences?"
+        naValue={NA_CUSTOMER_FACING}
+        value={form.customer_facing_areas_text}
+        onChange={(v) => set("customer_facing_areas_text", v)}
+      >
         <textarea rows={3} className={textareaCls} value={form.customer_facing_areas_text} onChange={(e) => set("customer_facing_areas_text", e.target.value)} placeholder="All customer support replies, order confirmation emails, and anything posted on Instagram or the website." />
-      </Field>
+      </NAField>
     </div>,
 
     // Step 3 — Budget & goals
@@ -174,9 +251,15 @@ export default function IntakePage() {
           <input type="number" min={0} className={inputCls} value={form.monthly_budget_usd} onChange={(e) => set("monthly_budget_usd", e.target.value)} placeholder="100" />
         </Field>
       </div>
-      <Field label="What will you never automate?" hint="Be specific. This protects you.">
+      <NAField
+        label="What will you never automate?"
+        hint="Be specific. This protects you."
+        naValue={NA_REFUSES_AUTOMATE}
+        value={form.things_owner_refuses_to_automate_text}
+        onChange={(v) => set("things_owner_refuses_to_automate_text", v)}
+      >
         <textarea rows={3} className={textareaCls} value={form.things_owner_refuses_to_automate_text} onChange={(e) => set("things_owner_refuses_to_automate_text", e.target.value)} placeholder="Final refund decisions. Replies to angry or distressed customers. Any pricing changes." />
-      </Field>
+      </NAField>
       <Field label="Measurement baseline (optional)" hint="If you have numbers — volume, time per task, error rate — paste them here. They make your bet metrics concrete.">
         <textarea rows={4} className={textareaCls} value={form.measurement_context_text} onChange={(e) => set("measurement_context_text", e.target.value)} placeholder="I get ~100 support emails/week. 70% are order status or return requests, each takes 3-5 min. I spend ~5h/week on this." />
       </Field>
