@@ -36,12 +36,16 @@ _TYPE_TO_SCHEMA: dict[str, type] = {
 
 
 def load_state_from_db(
-    db_path: str, workflow_run_id: UUID | None = None
+    db_path: str,
+    workflow_run_id: UUID | None = None,
+    *,
+    allow_partial: bool = False,
 ) -> dict[str, object]:
     """Load the 6 LLM artifacts + the EvalReport for a specific Audit run.
 
     If workflow_run_id is None, picks the most recent successful run.
-    Returns a dict keyed by artifact type.
+    Returns a dict keyed by artifact type.  Pass allow_partial=True to skip
+    the completeness check (continuation runs reuse prior-cycle artifacts).
     """
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
@@ -70,12 +74,13 @@ def load_state_from_db(
             continue
         state[t] = _TYPE_TO_SCHEMA[t].model_validate(json.loads(row["data"]))
 
-    required = set(_TYPE_TO_SCHEMA.keys())
-    missing = required - {k for k in state if k != "workflow_run_id"}
-    if missing:
-        raise ValueError(
-            f"Audit run {workflow_run_id} is missing artifacts: {sorted(missing)}"
-        )
+    if not allow_partial:
+        required = set(_TYPE_TO_SCHEMA.keys())
+        missing = required - {k for k in state if k != "workflow_run_id"}
+        if missing:
+            raise ValueError(
+                f"Audit run {workflow_run_id} is missing artifacts: {sorted(missing)}"
+            )
 
     return state
 

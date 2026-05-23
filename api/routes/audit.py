@@ -84,7 +84,12 @@ async def run_reflect_endpoint(body: ReflectRequest) -> AuditResponse:
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-    state = load_state_from_db(DB_PATH, workflow_run_id=str(workflow_id))
+    # Continuation runs reuse prior parsed_intake + workflow_map without
+    # re-saving them — merge new artifacts over the prior state.
+    new_artifacts = load_state_from_db(
+        DB_PATH, workflow_run_id=str(workflow_id), allow_partial=True
+    )
+    state = {**prior_state, **new_artifacts, "workflow_run_id": workflow_id}
     md = render_audit_markdown(state) if report.accepted else ""
 
     return AuditResponse(

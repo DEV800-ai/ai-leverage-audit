@@ -16,7 +16,10 @@ def get_store() -> SQLiteStore:
     return SQLiteStore(DB_PATH)
 
 
+TENANT_ID = os.environ.get("AUDIT_TENANT_ID", "default")
+
+
 def get_ctx() -> AgentContext:
     provider = _build_provider()
     store = get_store()
-    return AgentContext(provider=provider, store=store)
+    return AgentContext(tenant_id=TENANT_ID, provider=provider, store=store)
