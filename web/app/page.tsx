@@ -82,12 +82,20 @@ export default function LandingPage() {
       <nav className="border-b border-gray-100 px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <span className="font-semibold text-gray-900">AI Leverage Audit</span>
-          <Link
-            href="/history"
-            className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
-          >
-            Past audits
-          </Link>
+          <div className="flex items-center gap-6">
+            <Link
+              href="/about"
+              className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+            >
+              About
+            </Link>
+            <Link
+              href="/history"
+              className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+            >
+              Past audits
+            </Link>
+          </div>
         </div>
       </nav>
 
