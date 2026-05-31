@@ -57,10 +57,15 @@ testpaths = ["tests"]
 addopts = "-ra -q"
 pythonpath = ["src"]
 asyncio_mode = "auto"
+markers = ["slow: marks tests as slow (browser + full form submission)"]
 
 [dependency-groups]
 dev = [
     "fastapi>=0.136.1",
     "python-multipart>=0.0.29",
     "uvicorn[standard]>=0.47.0",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.6",
+    "pytest-playwright>=0.5",
+    "playwright>=1.44",
 ]
