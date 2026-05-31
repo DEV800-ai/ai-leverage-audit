@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, RefreshCw, Shield, Target, TrendingUp, Zap } from "lucide-react";
+import { ArrowRight, BookOpen, Lock, RefreshCw, Shield, Target, TrendingUp, Zap } from "lucide-react";
 
 const principles = [
   {
@@ -40,12 +40,23 @@ const phases = [
   },
 ];
 
-const techStack = [
-  { label: "Reasoning", detail: "Claude (Anthropic) — multi-step reasoning pipeline" },
-  { label: "Evaluation", detail: "Built-in judge agent validates every audit before delivery" },
-  { label: "Storage", detail: "SQLite — runs locally, no data sent to third-party databases" },
-  { label: "Frontend", detail: "Next.js + Tailwind CSS" },
-  { label: "Backend", detail: "FastAPI + leverage-platform runtime" },
+const trustPoints = [
+  {
+    title: "Your audit is private",
+    body: "Your workflows, business details, and audit results are never published or shared publicly. Only you can access your audit.",
+  },
+  {
+    title: "We use AI to generate — not to store or sell",
+    body: "We use Claude (Anthropic) to produce the audit. Your input is sent to the model to generate the report, but we do not sell your data, share it with third parties, or use it for advertising.",
+  },
+  {
+    title: "Human oversight is built in",
+    body: "Every audit explicitly marks the areas where AI should not act without a human decision — refunds, contracts, client communications. The tool is designed around human control, not around removing it.",
+  },
+  {
+    title: "Delete on request",
+    body: "If you want your audit data removed, contact us and we will delete it. No questions asked.",
+  },
 ];
 
 export default function AboutPage() {
@@ -152,18 +163,21 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Tech stack */}
+      {/* Trust & privacy */}
       <section className="bg-gray-50 py-14">
         <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Under the hood</h2>
-          <dl className="flex flex-col gap-3">
-            {techStack.map((item) => (
-              <div key={item.label} className="flex gap-4 text-sm">
-                <dt className="w-24 shrink-0 font-medium text-gray-700">{item.label}</dt>
-                <dd className="text-gray-500">{item.detail}</dd>
+          <div className="flex items-center gap-2 mb-8">
+            <Lock className="w-5 h-5 text-indigo-600" />
+            <h2 className="text-xl font-semibold text-gray-900">Privacy & data</h2>
+          </div>
+          <div className="flex flex-col gap-6">
+            {trustPoints.map((point) => (
+              <div key={point.title}>
+                <p className="text-sm font-semibold text-gray-800 mb-1">{point.title}</p>
+                <p className="text-sm text-gray-500 leading-relaxed">{point.body}</p>
               </div>
             ))}
-          </dl>
+          </div>
         </div>
       </section>
 

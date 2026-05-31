@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft, ArrowRight, Lock, Loader2 } from "lucide-react";
 import { runAudit } from "@/lib/api";
 
 const STEPS = [
@@ -136,8 +136,16 @@ const inputCls =
 
 const textareaCls = inputCls + " resize-none";
 
-export default function IntakePage() {
+const PLAN_LABELS: Record<string, { name: string; price: string }> = {
+  mentor: { name: "AI Operating Mentor", price: "$100/month" },
+  setup: { name: "AI Operating Setup", price: "$500 fixed scope" },
+};
+
+function IntakePageInner() {
   const router = useRouter();
+  const params = useSearchParams();
+  const plan = params.get("plan") ?? null;
+  const planInfo = plan ? PLAN_LABELS[plan] : null;
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<IntakeForm>(EMPTY);
   const [submitting, setSubmitting] = useState(false);
@@ -331,6 +339,15 @@ export default function IntakePage() {
       </div>
 
       <div className="flex-1 max-w-2xl mx-auto w-full px-6 py-10">
+        {planInfo && step === 0 && (
+          <div className="mb-6 flex items-center gap-3 bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3 text-sm">
+            <span className="text-indigo-600 font-medium">Selected:</span>
+            <span className="text-indigo-800 font-semibold">{planInfo.name}</span>
+            <span className="text-indigo-500">·</span>
+            <span className="text-indigo-700">{planInfo.price}</span>
+          </div>
+        )}
+
         <h1 className="text-2xl font-bold text-gray-900 mb-2">{STEPS[step]}</h1>
         <p className="text-sm text-gray-400 mb-8">
           {step === 0 && "Tell us the basics about your business."}
@@ -387,7 +404,22 @@ export default function IntakePage() {
             </button>
           )}
         </div>
+
+        {/* Privacy note */}
+        <div className="mt-10 flex items-center gap-2 text-xs text-gray-400">
+          <Lock className="w-3 h-3 shrink-0" />
+          Your answers are private and never shared publicly. We use Claude to generate
+          your audit and do not sell your data.
+        </div>
       </div>
     </main>
+  );
+}
+
+export default function IntakePage() {
+  return (
+    <Suspense>
+      <IntakePageInner />
+    </Suspense>
   );
 }
